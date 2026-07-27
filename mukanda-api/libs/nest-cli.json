@@ -1,0 +1,34 @@
+{
+  "projects": {
+    "evogo": {
+      "type": "library",
+      "root": "libs/evogo",
+      "entryFile": "index",
+      "sourceRoot": "libs/evogo/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/evogo/tsconfig.lib.json"
+      }
+    },
+    "resend": {
+      "type": "library",
+      "root": "libs/resend",
+      "entryFile": "index",
+      "sourceRoot": "libs/resend/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/resend/tsconfig.lib.json"
+      }
+    },
+    "stripe_p": {
+      "type": "library",
+      "root": "libs/stripe_p",
+      "entryFile": "index",
+      "sourceRoot": "libs/stripe_p/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/stripe_p/tsconfig.lib.json"
+      }
+    }
+  },
+  "compilerOptions": {
+    "webpack": true
+  }
+}

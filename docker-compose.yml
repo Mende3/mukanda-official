@@ -1,0 +1,260 @@
+services:
+
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    container_name: postgres
+    image: postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      -  mukanda-network
+  
+  redis:
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    container_name: redis
+    image: redis
+    restart: unless-stopped
+    environment:
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_USER: ${REDIS_USER}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "6380:6380"
+    volumes:
+      - redis_data:/data
+    networks:
+      -  mukanda-network
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_CUSTOM_ENV_VARS_ENABLED=true
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_PROTOCOL=http
+      - NODE_ENV=development
+      - GENERIC_TIMEZONE=${TIMEZONE}
+      - TZ=${TIMEZONE}
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${N8N_DATABASE}
+      - DB_POSTGRESDB_USER=${DB_USER}
+      - DB_POSTGRESDB_PASSWORD=${DB_USER_PWD}
+      # Owner pré-provisionado (substitui o basic auth)
+      - N8N_INSTANCE_OWNER_MANAGED_BY_ENV=true
+      - N8N_INSTANCE_OWNER_EMAIL=${N8N_OWNER_EMAIL}
+      - N8N_INSTANCE_OWNER_FIRSTNAME=${N8N_OWNER_FIRSTNAME}
+      - N8N_INSTANCE_OWNER_LASTNAME=${N8N_OWNER_LASTNAME}
+      - N8N_INSTANCE_OWNER_PASSWORD_HASH=${N8N_OWNER_PASSWORD_HASH}
+      # mukanda-api token
+      - MUKANDA_X_INTERNAL_NAME=${MUKANDA_X_INTERNAL_NAME}
+      - MUKANDA_X_INTERNAL_KEY=${MUKANDA_X_INTERNAL_KEY}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      -  mukanda-network
+    
+  evolution-go:
+    image: evoapicloud/evolution-go:latest
+    container_name: evolution-go
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=http://evolution-go:8080
+      - GLOBAL_API_KEY=${EVOGO_GLOBAL_API_KEY}
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - SERVER_PORT=8080
+      - CLIENT_NAME=evolution
+      # banco de dados
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      # FIX: credenciais hardcoded substituídas por variáveis de ambiente
+      - POSTGRES_AUTH_DB=${EVOGO_AUTH_DATABASE_URL}
+      - POSTGRES_USERS_DB=${EVOGO_USER_DATABASE_URL}
+      # FIX: aspas removidas do valor booleano
+      - DATABASE_SAVE_MESSAGES=false
+      - DATABASE_CONNECTION_URI=${EVOGO_DB_DATABASE_URL}
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      # redis para cache e filas
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=${REDIS_CACHE_GERAL_URL}
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_LOCAL_ENABLED=false
+      # webhook global → n8n (descomentares quando configurares o webhook no n8n)
+      #- WEBHOOK_GLOBAL_ENABLED=true
+      #- WEBHOOK_GLOBAL_URL=http://n8n:5678/webhook/evolution
+      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=true
+      - WEBHOOK_EVENTS_MESSAGES_UPSERT=true
+      - WEBHOOK_EVENTS_MESSAGES_UPDATE=true
+      - WEBHOOK_EVENTS_CONNECTION_UPDATE=true
+      - WEBHOOK_EVENTS_QRCODE_UPDATED=true
+      # configurações gerais
+      - CONFIG_SESSION_PHONE_CLIENT=Mukanda
+      - CONFIG_SESSION_PHONE_NAME=Chrome
+      - CONFIG_SESSION_PHONE_VERSION=${CONFIG_SESSION_PHONE_VERSION}
+      # QR code
+      - QRCODE_LIMIT=30
+      - QRCODE_COLOR=#000000
+      # instâncias
+      - DEL_INSTANCE=false
+      - DEL_TEMP_INSTANCES=false
+      # FIX: timezone unificado com o resto dos serviços
+      - TZ=${TIMEZONE}
+    volumes:
+      - evogo_data:/evolution/instances
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      -  mukanda-network
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_MANAGEMENT_AGENT_DISABLE_METRICS_COLLECTOR=false
+    configs:
+      - source: rabbitmq-plugins
+        target: /etc/rabbitmq/enabled_plugins
+    volumes:
+      - rabbitmq_lib_data:/var/lib/rabbitmq
+      - rabbitmq_log_data:/var/log/rabbitmq
+    networks:
+      - mukanda-network
+    
+configs:
+  rabbitmq-plugins:
+    content: "[rabbitmq_management]."
+
+
+  # api-gateway:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     args:
+  #       APP_NAME: api-gateway
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - auth-service
+  #     - business-service
+  #     - redis
+  #   networks:
+  #     -  mukanda-network
+
+  # auth-service:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     args:
+  #       APP_NAME: auth-service
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   networks:
+  #     -  mukanda-network
+
+  # business-service:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     args:
+  #       APP_NAME: business-service
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #     # - rabbitmq
+  #   networks:
+  #     -  mukanda-network
+
+volumes:
+  postgres_data:
+    name: postgres_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/postgres
+
+  redis_data:
+    name: redis_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/redis
+
+  n8n_data:
+    name: n8n_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/n8n
+
+  evogo_data:
+    name: evogo_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/evogo
+  
+  rabbitmq_lib_data:
+    name: rabbitmq_lib_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/rabbitmq/rabbitmq_lib
+
+  rabbitmq_log_data:
+    name: rabbitmq_log_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/rabbitmq/rabbitmq_log
+
+
+networks:
+   mukanda-network:
+    driver: bridge

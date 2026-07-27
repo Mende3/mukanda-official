@@ -1,0 +1,6 @@
+export enum OrderStatus {
+    PENDING = "PENDING",
+    CONFIRMED = "CONFIRMED",
+    RESCHEDULED = "RESCHEDULED",
+    CANCELLED = "CANCELLED"
+}

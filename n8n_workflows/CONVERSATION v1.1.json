@@ -1,0 +1,868 @@
+{
+  "name": "CONVERSATION v1.1",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "743f2e06-30d8-4bb7-8c51-5bedfc0cd263",
+              "name": "order_manager_context",
+              "value": "={{ $('When Executed by Another Workflow').item.json.business_status[0].agentsOn[1] }}",
+              "type": "object"
+            },
+            {
+              "id": "f59bfac2-761e-41ca-9294-47f1671a6532",
+              "name": "utils_fields",
+              "value": "={{ $('When Executed by Another Workflow').item.json.utils_fields }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        272
+      ],
+      "id": "c90f2249-e5a6-48c4-a86f-8411762ca96f",
+      "name": "extract OM"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "178dc74d-a2e5-47f2-9a03-fea296916f1f",
+              "name": "sugest_manager_context",
+              "value": "={{ $('When Executed by Another Workflow').item.json.business_status[0].agentsOn[2] }}",
+              "type": "object"
+            },
+            {
+              "id": "fd3cca5a-84fc-48b7-aabf-1350d90f415a",
+              "name": "utils_fields",
+              "value": "={{ $('When Executed by Another Workflow').item.json.utils_fields }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        496
+      ],
+      "id": "6e9fa93d-fa6b-4d7b-b5ca-cb1dba776adc",
+      "name": "extract S"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "mTfKwRI2J7IWVsri",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/mTfKwRI2J7IWVsri",
+          "cachedResultName": "ORDER_MANAGER v1.0"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        272
+      ],
+      "id": "5a425d30-28be-47cf-a3f1-589126165c8d",
+      "name": "ORDER_MANAGER"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OocaWvBiATDLU12u",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/OocaWvBiATDLU12u",
+          "cachedResultName": "SUGGESTIONS v1.0"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        496
+      ],
+      "id": "e940dfc0-6447-477c-95ee-da6d89118a78",
+      "name": "SUGGESTIONS"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        544,
+        80
+      ],
+      "id": "eb8f5cff-553a-4995-93c3-b0612e94236e",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -96
+      ],
+      "id": "375f1ef6-cac9-4355-b210-d91ce13c7058",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"reply\": { \"type\": \"string\" },\n    \"actions\": { \"type\": \"array\" }\n  },\n  \"required\": [\"reply\", \"actions\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1216,
+        176
+      ],
+      "id": "28160efc-fc34-4c40-8c42-a66efb0a7ca2",
+      "name": "output_type"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=conversation:seller{{ $('When Executed by Another Workflow').item.json.business_status[0].business.id }}:number:{{ $('When Executed by Another Workflow').item.json.business_status[0].business.phone }}",
+        "sessionTTL": 1440,
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        -1248,
+        576
+      ],
+      "id": "d15cfe3d-eb83-4dc3-a59b-1d3bed430c9b",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "r03nj0bPJPyiNGpX",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.utils_fields[0].sender_data.message }}",
+        "options": {
+          "systemMessage": "=={{ $json.business_status[0].agentsOn[0].systemPrompt }}\nÉs simpático, directo e eficiente. Respondes sempre no idioma que o cliente usar.\n\n## Contexto\n- Negócio: {{ $json.business_status[0].business.name }}\n- Cliente: {{ $json.business_status[0].business.description }}\n- Moeda: Kwanza (Kz)\n\n## A tua missão principal\nConversar naturalmente com o cliente. Responder às suas perguntas, apresentar produtos, dar informações sobre o negócio e criar uma boa experiência. A maior parte das conversas não envolve encomendas — e está bem assim.\n\n## Interpretação de horários\n- O endpoint `pegar_horarios` devolve intervalos de disponibilidade, não horas fixas\n- Um intervalo \"00:00 às 23:59\" significa que QUALQUER hora nesse intervalo é válida\n- Exemplo: se o cliente disser \"segunda às 16h\" e o intervalo for \"00:00-24:00\", o horário É válido\n- Só recusas um horário se estiver FORA do intervalo devolvido pelo endpoint\n- Nunca interpretes os limites do intervalo como as únicas horas disponíveis\n\n## O que fazes no dia a dia\n- Cumprimentar e conversar com o cliente de forma natural\n- Responder dúvidas sobre o negócio, produtos e preços — usa `buscar_produtos`\n- Quando o cliente pedir a foto ou imagem de um produto, devolves action `send_image` com o campo `imageKey` do produto — nunca inventas URLs, nunca coloques caminhos no reply\n- Após o cliente mostrar interesse num produto, sugere produtos relacionados via action `send_suggestion`\n- Quando o cliente quiser encomendar, segue o processo de encomenda abaixo\n\n## Formatação\n- Usa formatação WhatsApp: *negrito* para destacar, nunca **negrito**\n- Listas com hífen simples: - item\n- Sem Markdown extra (##, **, __, etc.)\n- Nunca coloques URLs no reply\n\n## Processo de encomenda (só quando o cliente quer encomendar)\n1. Cliente mostra intenção de encomendar → verifica disponibilidade com `pegar_horarios`\n2. Horário inválido → informa os dias e horas disponíveis, regista o interesse mas NÃO crias encomenda\n3. Horário válido → resume os itens, preços, total e horário escolhido → pergunta ao cliente: \"Posso registar a tua encomenda?\"\n4. Cliente confirma com sim/yes/ok/confirmo ou qualquer resposta afirmativa →\n   - Devolves action `confirm_order` com todos os dados da encomenda\n   - Devolves action `send_suggestion` com produtos relacionados aos itens encomendados\n5. Cliente recusa → agradeces e encerras o processo sem criar encomenda\n\n## Regras de imagem\n- Quando o cliente pede foto de um produto, consulta `endpoint para pegar os produtos e informação em estoque` e usa o campo `imageKey` devolvido\n- O campo `imageKey` da action `send_image` deve ser SEMPRE o valor \n  COMPLETO e EXACTO devolvido pelo endpoint — copia caractere por caractere\n  sem remover prefixos, pastas ou extensões\n- Nunca extraias apenas parte do valor — se o endpoint devolver COMPLETO\n  o imageKey na action deve ser exactamente esse valor, sem alterações\n- Nunca constróis URLs, nunca usas o nome do produto como caminho\n- Se o produto não tiver `imageKey`, responde \"Não tenho imagem disponível \n  para este produto\"\n- O imageKey do produto contém o email, a pasta e o nome do ficheiro completo \ncom extensão — copia o campo imageKey tal como está, sem modificar nenhuma parte, \nincluindo o email, a barra, a pasta \"produtos/\", o uuid, o underscore, \no nome e a extensão (.jpg, .png, etc.)\n\n## Regras gerais\n- Nunca inventes produtos ou preços — consulta sempre `endpoint para pegar os produtos e informação em estoque`\n- Nunca uses `pegar_horarios` a não ser que o cliente queira encomendar\n- Nunca digas que és uma IA\n- O id dos produtos é informação interna. NUNCA o revelar ao cliente\n- Nunca coloques URLs no reply — usa sempre actions\n- O teu único domínio é este negócio: produtos, encomendas e informações do negócio\n- Se o cliente fizer perguntas fora deste domínio, responde: \"Só posso ajudar com informações sobre os nossos produtos e encomendas. Posso ajudar com alguma dessas questões?\"\n- NUNCA uses conhecimento geral para responder\n- Quando não tiver produto em estoque, diz sempre \"não temos o produto\"\n\n## Formato de resposta (JSON obrigatório, sem texto fora dele)\n{\n  \"reply\": \"mensagem para o cliente\",\n  \"actions\": [\n    {\n        \"type\": \"send_image\",\n        \"payload\": {\n        \"imageKey\": \"email@exemplo.com/produtos/541721ca-66ca-4327-a8cd-4ffb7cd20376_img.jpg\",\n        \"caption\": \"Nome do produto - 0 Kz\"\n        }\n    },\n    {\n      \"type\": \"confirm_order\",\n      \"payload\": {\n        \"scheduledAt\": \"2026-05-20T10:00:00.000Z\",\n        \"clientName\": \"{{ $json.receiver_datas.pushName }}\",\n        \"clientNumber\": \"{{ $json.receiver_datas.sender }}\",\n        \"notes\": null,\n        \"items\": [\n          {\n            \"product_id\": \"uuid do produto\",\n            \"name\": \"nome do produto\",\n            \"quantity\": 1,\n            \"price\": 0\n          }\n        ],\n        \"total\": 0\n      }\n    },\n    {\n      \"type\": \"send_suggestion\",\n      \"payload\": {\n        \"products\": [{ \"name\": \"...\", \"price\": 0, \"description\": \"...\" }]\n      }\n    }\n  ]\n}\nSe não houver nenhuma action, devolve \"actions\": [].\n\n\nNo final de qualquer encomenda avisa ao cliente que sua encomenda foi marcada e será avaliada e assim que entraram em contato com ele"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1296,
+        336
+      ],
+      "id": "7903d19a-1b93-4d7b-a351-6ec75b302e23",
+      "name": "Agente de conversa",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "97c50f03-a0d4-4e47-a228-4b32c4001118",
+              "leftValue": "={{ $json.actions[0].type }}",
+              "rightValue": "=confirm_order",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        288
+      ],
+      "id": "7cef6068-50e4-4489-89ce-7a697829456b",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $('When Executed by Another Workflow').item.json.utils_fields[0].query_fields.whatsappInstanceToken }}",
+        "sendTextNumber": "={{ $('When Executed by Another Workflow').item.json.utils_fields[0].sender_data.remoteJID }}",
+        "sendTextContent": "={{ $('extract1').item.json.reply }}",
+        "sendTextDelay": 3,
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        224,
+        80
+      ],
+      "id": "f9fee6a0-f098-403f-ad52-94a75c43683c",
+      "name": "mensagem de encomenda",
+      "credentials": {
+        "evoGoApi": {
+          "id": "lGoaXRaAHpusYS6P",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $('When Executed by Another Workflow').item.json.utils_fields[0].query_fields.whatsappInstanceToken }}",
+        "sendTextNumber": "={{ $('When Executed by Another Workflow').item.json.utils_fields[0].sender_data.remoteJID }}",
+        "sendTextContent": "={{ $('extract1').item.json.reply }}",
+        "sendTextDelay": 3,
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        640
+      ],
+      "id": "e8a46ca8-33f3-4f73-a1ac-8f8cfc4cf7d2",
+      "name": "mensagem normal",
+      "credentials": {
+        "evoGoApi": {
+          "id": "lGoaXRaAHpusYS6P",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "operation": "sendMedia",
+        "instanceApiKey": "={{ $('When Executed by Another Workflow').item.json.utils_fields[0].query_fields.whatsappInstanceToken }}",
+        "sendMediaNumber": "={{ $('When Executed by Another Workflow').item.json.utils_fields[0].sender_data.remoteJID }}",
+        "sendMediaUrl": "={{$env[\"R2_PUBLIC_URL\"]}}/{{ $json.actions[0].payload.imageKey }}",
+        "sendMediaCaption": "={{ $('If').item.json.sendImage.payload.caption }}",
+        "sendMediaFilename": "=",
+        "sendMediaType": "image",
+        "sendMediaDelay": 3,
+        "sendMediaAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -96
+      ],
+      "id": "ba74df08-e8f5-4a06-b146-0efa7b65238a",
+      "name": "Send media from URL",
+      "credentials": {
+        "evoGoApi": {
+          "id": "lGoaXRaAHpusYS6P",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cbfaaf38-6a43-4221-b73f-9b201797077e",
+              "leftValue": "={{ $json.actions }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -464,
+        336
+      ],
+      "id": "c60fad42-ebb1-400b-8b4d-69ae99b9ccf5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "##Realizar Gets\n**Ferramentas** para usar rotas get na api internal da mukanda",
+        "height": 416,
+        "width": 432,
+        "color": "#4F7CC4"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        496
+      ],
+      "id": "7ad9078a-5f9b-4a3b-8417-0189aac5d9dd",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "toolDescription": "endpoint para pegar as datas e horas disponíveis para encomendas",
+        "url": "=https://192.168.0.117:3000/api/internal/aitool/getfreetimes/{{ $('Preparar Payload Agente').item.json.businessId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -752,
+        672
+      ],
+      "id": "f820a610-a839-4eb6-ae94-71657a01bc3a",
+      "name": "endpoint para pegar dias e hora válidas para encomendas"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.output\nconst actions = data.actions || [];\n\nreturn [{\n  json: {\n    reply: data.reply,\n    actions,\n    sendImage:    actions.find(a => a.type === 'send_image')             || null,\n    sendOrder:    actions.find(a => a.type === 'send_order_confirmation') || null,\n    notifyVendor: actions.find(a => a.type === 'notify_vendor')          || null,\n    sendSuggestion: actions.find(a => a.type === 'send_suggestion')      || null,\n    hasImage:     !!actions.find(a => a.type === 'send_image'),\n    hasOrder:     !!actions.find(a => a.type === 'send_order_confirmation')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        336
+      ],
+      "id": "5b189e67-8570-40bf-b187-0543ba53736e",
+      "name": "extract1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.sendImage }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "ab4a3d25-547d-4cc0-a63f-f4177a3853a2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "64ac65c3-6f8b-4035-9977-ab2074c9c2a9",
+                    "leftValue": "={{ $json.sendOrder }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c256a5e2-f0d5-4ad7-a9df-0588e739284e",
+                    "leftValue": "={{ $json.sendSuggestion }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        64
+      ],
+      "id": "0c32b2d4-77f6-442a-b982-014b2fe3acc2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\nlet parsed;\ntry {\n  const clean = raw.replace(/```json|```/g, '').trim();\n  parsed = JSON.parse(clean);\n} catch (e) {\n  parsed = { reply: raw, actions: [] };\n}\n\nreturn [{\n  output: {\n    reply: parsed.reply,\n    actions: parsed.actions || []\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        336
+      ],
+      "id": "dd3daca3-d82a-46c7-a87e-a4f3933de0a7",
+      "name": "parsing"
+    },
+    {
+      "parameters": {
+        "toolDescription": "endpoint para pegar os produtos e informação em estoque",
+        "url": "=https://192.168.0.117:3000/api/internal/aitool/getcompanyproducts/{{ $json.businessId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -928,
+        672
+      ],
+      "id": "e6ff7cfb-b714-4db9-9c90-9e9e3cd79017",
+      "name": "endpoint para pegar produtos"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1632,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        544
+      ],
+      "id": "bcb94b66-7758-4f3b-855c-2f942c4ce25e",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "fuJUdLnV8WsKW48N",
+          "name": "Mistral Cloud account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "business_status": [
+            {
+              "business": {
+                "id": "a281a9ad-44c6-4d2e-b9d3-c84162343c51",
+                "name": "MendesTexh",
+                "phone": "+244956632348",
+                "description": null,
+                "isActive": false,
+                "plan": "BASIC",
+                "whatsappInstanceId": "358000dd-60b3-4350-bc0a-604730135e8d",
+                "whatsappInstanceToken": "$2b$10$M4msM1y4BRmo3weKmHIxGuK5TDboBcpE9jkXGC2cA3xEHcioLiJm2"
+              },
+              "agentsOn": [
+                {
+                  "name": "Kusamba",
+                  "description": "Agente de conversa",
+                  "systemPrompt": "És o Kusamba, assistente virtual da MendesTexh. Responde sempre no idioma da pessoa que te escreve.",
+                  "personality": "friendly",
+                  "pollMinInterval": null,
+                  "pollTrigger": null
+                },
+                {
+                  "name": "Gestor de Encomendas",
+                  "description": "Gere pedidos recebidos por WhatsApp",
+                  "systemPrompt": "És o Gestor de Encomendas, agente de gestão de encomendas da MendesTexh. O teu objetivo é registar e acompanhar as encomendas do cliente.",
+                  "personality": "professional",
+                  "pollMinInterval": null,
+                  "pollTrigger": null
+                },
+                {
+                  "name": "Kulombola",
+                  "description": "Agente de sugestões e recomendações",
+                  "systemPrompt": "És o Kulombola, assistente virtual da MendesTexh. O teu objetivo é sugerir produtos relevantes ao cliente no momento certo.",
+                  "personality": "friendly",
+                  "pollMinInterval": null,
+                  "pollTrigger": null
+                },
+                {
+                  "name": "Agente de Marketing",
+                  "description": "Campanhas e disparos proativos",
+                  "systemPrompt": "És o Promotor, agente de marketing da MendesTexh. O teu objetivo é promover produtos e campanhas relevantes ao cliente de forma natural e persuasiva.",
+                  "personality": "persuasive",
+                  "pollMinInterval": 1,
+                  "pollTrigger": "both"
+                },
+                {
+                  "name": "Agente de Fidelização",
+                  "description": "Programa de fidelização de clientes",
+                  "systemPrompt": "És o Fidelizador, agente de fidelização da MendesTexh. O teu objetivo é reconhecer e recompensar clientes frequentes, promovendo a sua lealdade à marca.",
+                  "personality": "friendly",
+                  "pollMinInterval": null,
+                  "pollTrigger": null
+                },
+                {
+                  "name": "Agente de Feedback",
+                  "description": "Pesquisas de satisfação NPS pós-compra",
+                  "systemPrompt": "És o Avaliador, agente de recolha de feedback da MendesTexh. O teu objetivo é recolher opiniões e avaliações dos clientes após interações ou compras.",
+                  "personality": "professional",
+                  "pollMinInterval": null,
+                  "pollTrigger": null
+                },
+                {
+                  "name": "Agente de Reengagement",
+                  "description": "Reativação de clientes inativos",
+                  "systemPrompt": "És o Reativador, agente de reengajamento da MendesTexh. O teu objetivo é reativar clientes inactivos com mensagens personalizadas e ofertas relevantes.",
+                  "personality": "friendly",
+                  "pollMinInterval": null,
+                  "pollTrigger": null
+                },
+                {
+                  "name": "Qualificador de Leads",
+                  "description": "Qualificação de novos contactos via conversa",
+                  "systemPrompt": "És o Qualificador, agente de qualificação de leads da MendesTexh. O teu objetivo é identificar e qualificar potenciais clientes através de perguntas estratégicas.",
+                  "personality": "professional",
+                  "pollMinInterval": null,
+                  "pollTrigger": null
+                }
+              ]
+            }
+          ],
+          "utils_fields": [
+            {
+              "query_fields": {
+                "whatsappInstanceId": "358000dd-60b3-4350-bc0a-604730135e8d",
+                "whatsappInstanceToken": "$2b$10$M4msM1y4BRmo3weKmHIxGuK5TDboBcpE9jkXGC2cA3xEHcioLiJm2"
+              },
+              "instance_data": {
+                "instance_name": "+244956632348",
+                "phoneNumber": "+244956632348"
+              },
+              "sender_data": {
+                "sender_name": "",
+                "remoteJID": "61628720656597@lid",
+                "message": "oi"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "extract OM": {
+      "main": [
+        [
+          {
+            "node": "ORDER_MANAGER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract S": {
+      "main": [
+        [
+          {
+            "node": "SUGGESTIONS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente de conversa",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente de conversa": {
+      "main": [
+        [
+          {
+            "node": "parsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "extract OM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "extract S",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagem de encomenda": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send media from URL": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mensagem normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "endpoint para pegar dias e hora válidas para encomendas": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente de conversa",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send media from URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mensagem de encomenda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parsing": {
+      "main": [
+        [
+          {
+            "node": "extract1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "endpoint para pegar produtos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente de conversa",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Agente de conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente de conversa",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b2740eae-18b2-4d0a-961a-2a235b21ec4c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d7662fcae9c2960c48cc8b4468cfc69e57687abec22f4d3b5ec4dcc44e117a1"
+  },
+  "nodeGroups": [],
+  "id": "3kced9krrVPjXUyO",
+  "tags": []
+}
