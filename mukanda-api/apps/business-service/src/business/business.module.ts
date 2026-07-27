@@ -8,6 +8,10 @@ import { StripePModule } from '@app/stripe_p'
 @Module({
   controllers: [BusinessController],
   providers: [BusinessService],
-  imports: [EvogoModule, MyRedisModule, StripePModule]
+  imports: [
+    EvogoModule,
+    MyRedisModule,
+    StripePModule,
+  ]
 })
 export class BusinessModule {}

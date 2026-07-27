@@ -11,6 +11,7 @@ import { AuthGuard } from '../../auth/auth/guards/auth/auth.guard';
 import { EmailVerifiedGuard } from '../../auth/auth/guards/auth/email.guard';
 import { RolesGuard } from '../../auth/auth/guards/roles/role.guard';
 import { UpdateBusinessInfoAdminDto } from '../../utils/dto/admin/update-business.admin.dto';
+import { UpdateCustomAgentAdminDto } from '../../utils/dto/admin/update-busines.admin.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -129,12 +130,14 @@ export class AdminController {
     @Patch('/agent/:id/config')
     async agents (
         @Req() req,
+        @Body() body: UpdateCustomAgentAdminDto,
         @Param('id') agentId: string 
     ) {
         return firstValueFrom (
             this.businessClient.send ('admin-update-agent', {
                 user: req.user,
-                agentId
+                agentId,
+                body
             })
             .pipe(handlerRcpError)
         )

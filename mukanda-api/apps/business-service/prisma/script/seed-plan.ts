@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
-import { PrismaClient, PlanType } from '../../generated/prisma';
+import { PrismaClient, PlanType, QuotaPeriod } from '../../generated/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const dbUrl = process.env.BUSINESS_DATABASE_URL;
@@ -12,7 +12,8 @@ const prisma = new PrismaClient({ adapter });
 
 
 async function seedPlans() {
-  const plans = [
+  
+   const plans = [
     {
       type: PlanType.FREE,
       name: 'Grátis',
@@ -20,38 +21,50 @@ async function seedPlans() {
       stripePriceId: null,
       amountCents: 0,
       currency: 'aoa',
-      aiMessageLimit: 29,
-      agentSlots: 1,
+      aiMessageLimit: 9,
+      quotaPeriod: QuotaPeriod.DAILY,
+      rateBurstTokens: 3,
+      rateRefillPerSec: 3 / 3600, // 3 msgs/hora de rajada — bem restrito
+      agentSlots: 2,
     },
     {
       type: PlanType.BASIC,
       name: 'Básico',
       description: 'Para negócios em crescimento',
-      stripePriceId: 'price_1TxGD8BN6jfCePZiXefT1c47', // preencher após criar no Stripe
-      amountCents: 999999, // $20,00
+      stripePriceId: 'price_1TxwtTBN6jfCePZi1jdrybGP',
+      amountCents: 449999,
       currency: 'aoa',
-      aiMessageLimit: 899,
-      agentSlots: 3,
+      aiMessageLimit: 55,
+      quotaPeriod: QuotaPeriod.DAILY,
+      rateBurstTokens: 8,
+      rateRefillPerSec: 8 / 600, // 8 msgs por 10min de rajada
+      agentSlots: 4,
     },
     {
       type: PlanType.PRO,
       name: 'Pro',
       description: 'Para negócios estabelecidos',
       stripePriceId: 'price_1TxGG0BN6jfCePZiNJcrSVPu',
-      amountCents: 1499999, // $50,00
+      amountCents: 999999,
       currency: 'aoa',
-      aiMessageLimit: 1499,
-      agentSlots: 6,
+      aiMessageLimit: 210,
+      quotaPeriod: QuotaPeriod.DAILY,
+      rateBurstTokens: 20,
+      rateRefillPerSec: 20 / 300, // 20 msgs por 5min
+      agentSlots: 7,
     },
     {
       type: PlanType.BUSINESS,
       name: 'Business',
       description: 'Para operações de grande volume',
-      stripePriceId: 'price_1TxGTBBN6jfCePZixLq2vqTt',
-      amountCents: 6499999, // $120,00
+      stripePriceId: 'price_1TxwrDBN6jfCePZipGDHEoWV',
+      amountCents: 2899999,
       currency: 'aoa',
-      aiMessageLimit: null, // ilimitado
-      agentSlots: 11, // todos os AgentType
+      aiMessageLimit: 820,
+      quotaPeriod: QuotaPeriod.DAILY,
+      rateBurstTokens: 80,
+      rateRefillPerSec: 80 / 300, // 80 msgs por 5min
+      agentSlots: 11,
     },
   ];
 

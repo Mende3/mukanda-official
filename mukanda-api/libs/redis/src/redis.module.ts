@@ -23,7 +23,7 @@ function createRedisClient(db: number) {
   providers: [
     { provide: REDIS_CACHE,   useFactory: () => createRedisClient(0) },
     { provide: REDIS_SESSION, useFactory: () => createRedisClient(1) },
-    { provide: REDIS_RATE,    useFactory: () => createRedisClient(3) },
+    { provide: REDIS_RATE,    useFactory: () => createRedisClient(2) },
     MyRedisService,
   ],
   exports: [MyRedisService, REDIS_CACHE, REDIS_SESSION, REDIS_RATE],

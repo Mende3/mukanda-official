@@ -10,6 +10,8 @@ import { AdminController } from './admin/admin.controller';
 import { AdminService } from './admin/admin.service';
 import { AdminModule } from './admin/admin.module';
 import { StripeModule } from './stripe/stripe.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { QuoteAndRateModule } from './quote-and-rate/quote-and-rate.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { StripeModule } from './stripe/stripe.module';
     InternalModule,
     AdminModule,
     StripeModule,
+    ScheduleModule.forRoot(),
+    QuoteAndRateModule
   ],
   controllers: [],
   providers: [],

@@ -104,9 +104,8 @@ model Business {
   availability  Availability?
   agents        Agent[]
   campaigns Campaign[]
-  // aiUsageQuota AiUsageQuota[]
-  // creditTransaction CreditTransaction[]
-  // eiUsageEvent AiUsageEvent[]
+  aiUsageQuota AiUsageQuota?
+  aiUsageEvents AiUsageEvent[]
   @@index([ownerId])
 }
 
@@ -121,7 +120,12 @@ model Plan {
   currency        String   @default("aoa")
 
   aiMessageLimit  Int?
-  agentSlots      Int      @default(1)
+  quotaPeriod     QuotaPeriod @default(DAILY)
+
+  rateBurstTokens  Int?         // capacidade máxima do bucket (rajada)
+  rateRefillPerSec Float?       // tokens repostos por segundo
+
+  agentSlots      Int      @default(2)
   active          Boolean  @default(true)
 
   subscriptions          Subscription[] @relation("CurrentPlan")
@@ -131,6 +135,37 @@ model Plan {
   updatedAt       DateTime @updatedAt
 }
 
+// ─── Rate & Quota de IA ──────────────────────────────
+
+model AiUsageQuota {
+  id          String      @id @default(uuid())
+  businessId  String      @unique
+  business    Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  used        Int         @default(0)
+  limit       Int         // snapshot do aiMessageLimit no momento — sobrevive a troca de plano no meio do período
+  periodStart DateTime
+  periodEnd   DateTime
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([businessId])
+}
+
+model AiUsageEvent {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+
+  @@index([businessId, createdAt])
+}
+
+
+///////////////
 model Subscription {
   id                   String              @id @default(uuid())
   businessId           String              @unique

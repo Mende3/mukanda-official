@@ -132,5 +132,21 @@ export class AdminService {
 
     // agent
 
+    async upadateAgent (user: any, agentId: string, body: any) {
+        try {
+            await this.prismaService.agent.update ({
+                where: {id: agentId},
+                data: body
+            });
+
+            return {'message': `agente atualizado com sucesso com os seguintes dados`}
+        } catch (err) {
+            throw new RpcException ({
+                statusCode: HttpStatus.CONFLICT,
+                message: "Não foi possível atualizar este agente"
+            });
+        }
+    }
+
     
 }

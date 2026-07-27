@@ -67,10 +67,8 @@ export class AdminController {
     // agents
 
     @MessagePattern('admin-update-agent')
-    async updateAgent(@Payload() data: {user: string, agentId: string}) {
-        return {
-            'message': 'update agent by agentId'
-        }
+    async updateAgent(@Payload() data: {user: any, agentId: string, body: any}) {
+        return this.adminService.upadateAgent (data.user, data.agentId, data.body);
     }
 
 }
