@@ -35,7 +35,8 @@ export class AdminService {
     async findBusiness (businessId: string) {
 
         const business = await this.prismaService.business.findUnique ({
-            where: {id: businessId}
+            where: {id: businessId},
+            include: {agents: true}
         });
 
         return business;
@@ -95,4 +96,41 @@ export class AdminService {
         }
         return {message: "business atualizado com sucesso"}
     }
+
+    // sub & plan
+
+    async subscriptions (user: string) {
+        try {
+            const subscriptions = await this.prismaService.subscription.findMany ({
+                where: {status: 'ACTIVE'}
+            });
+            return subscriptions;
+        } catch (err) {
+            throw new RpcException ({
+                statusCode: HttpStatus.CONFLICT,
+                message: "Não foi possível trazer essas informações"
+            });         
+        }
+    }
+
+
+    async busSubscription (user: string, businessId: string) {
+        try {
+            const subscription = await this.prismaService.subscription.findMany ({
+                where: {businessId},
+                include: {plan: true}
+            });
+
+            return subscription;
+        } catch (err) {
+            throw new RpcException ({
+                statusCode: HttpStatus.CONFLICT,
+                message: "Não foi possível trazer essas informações"
+            });         
+        }
+    }
+
+    // agent
+
+    
 }

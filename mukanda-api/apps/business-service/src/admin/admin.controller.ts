@@ -6,6 +6,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 export class AdminController {
     constructor (private readonly adminService: AdminService) {}
 
+    // gestao de business
     @MessagePattern('admin-get-businesses')
     async findAllBusinesses(@Payload() data: {user: string}) {
         return this.adminService.findAllBusinesses (
@@ -51,4 +52,25 @@ export class AdminController {
             // data.plan
         );
     }
+
+    // sub & plan
+    @MessagePattern('admin-get-subscriptions')
+     async subscriptions(@Payload() data: {user: string}) {
+        return this.adminService.subscriptions (data.user);
+    }
+
+    @MessagePattern('admin-get-bus-subscriptions')
+    async busSubscription(@Payload() data: {user: string, businessId: string}) {
+        return this.adminService.busSubscription (data.user, data.businessId);
+    }
+
+    // agents
+
+    @MessagePattern('admin-update-agent')
+    async updateAgent(@Payload() data: {user: string, agentId: string}) {
+        return {
+            'message': 'update agent by agentId'
+        }
+    }
+
 }

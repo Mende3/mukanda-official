@@ -74,7 +74,7 @@ export class AdminController {
     @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
     @Roles(Role.Admin)
     @Delete('/delete-business/:id')
-    async Delete(
+    async delete(
         @Req() req,
         @Param('id') businessId: string 
     ) {
@@ -82,6 +82,59 @@ export class AdminController {
             this.businessClient.send ('admin-delete-business', {
                 user: req.user,
                 businessId
+            })
+            .pipe(handlerRcpError)
+        )
+    }
+
+    // sub & plan
+
+    @ApiOperation({ summary: 'visão geral de todas as subscrições ativas'})
+    @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
+    @Roles(Role.Admin)
+    @Get('/get-subscriptions')
+    async subscriptions(
+        @Req() req 
+    ) {
+        return firstValueFrom (
+            this.businessClient.send ('admin-get-subscriptions', {
+                user: req.user
+            })
+            .pipe(handlerRcpError)
+        )
+    }
+
+    @ApiOperation({ summary: 'mais informações de plano e subscrição'})
+    @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
+    @Roles(Role.Admin)
+    @Get('/get-subscriptions/:id')
+    async busSubscription (
+        @Req() req,
+        @Param('id') businessId: string 
+    ) {
+        return firstValueFrom (
+            this.businessClient.send ('admin-get-bus-subscriptions', {
+                user: req.user,
+                businessId
+            })
+            .pipe(handlerRcpError)
+        )
+    }
+
+    // agent
+
+    @ApiOperation({ summary: 'ajustar modelo/prompt/parametros sem passar pelo dono do business'})
+    @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
+    @Roles(Role.Admin)
+    @Patch('/agent/:id/config')
+    async agents (
+        @Req() req,
+        @Param('id') agentId: string 
+    ) {
+        return firstValueFrom (
+            this.businessClient.send ('admin-update-agent', {
+                user: req.user,
+                agentId
             })
             .pipe(handlerRcpError)
         )
