@@ -10,9 +10,8 @@ import { Roles } from '../../auth/auth/guards/roles/func.decorator';
 import { Role } from '../../auth/auth/guards/roles/role.enum';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
 import { UpdateBusinessInfoDto } from '../../utils/dto/business/update-business.dto';
-import { UpdaeBusinessPlanDto } from '../../utils/dto/business/update-business-plan.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { UpdateAgentDto, UpdateCustomAgentDto} from '../../utils/dto/business/update-agent.dto';
+import { UpdateCustomAgentDto} from '../../utils/dto/business/update-agent.dto';
 import { CreateCustomAgentDto } from '../../utils/dto/business/create-custom-agent.dto';
 import { InstanceConnectDto } from '../../utils/dto/business/instance-connect.dto';
 

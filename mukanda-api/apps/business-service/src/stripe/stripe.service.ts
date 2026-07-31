@@ -49,6 +49,7 @@ export class StripeService {
     private businessKey  = (userId: string) => `business:user:${userId}`;
     private businessSubKey  = (userId: string) => `business--subscription--:user:${userId}`;
     private agentsKey     = (userId: string) => `business:user:${userId}:agents`;
+    private subscriptionKey = (businessId: string) => `business:user:${businessId}`;
 
     async findBusinessByOwnerId(ownerId: string) {
     
@@ -187,7 +188,7 @@ export class StripeService {
     //
     private async syncAgentsForPlan(business: { id: string, ownerId: string }, plan: PlanType) {
         const enabledTypes = new Set(this.PLAN_ENABLED_AGENTS[plan] ?? []);
-
+       
         await this.prismaService.$transaction([
             this.prismaService.agent.updateMany({
                 where: { businessId: business.id, type: { not: AgentType.CUSTOM } },
@@ -200,6 +201,7 @@ export class StripeService {
         ]);
 
         await this.myRedisService.cacheDel(this.businessKey(business.ownerId));
+        await this.myRedisService.cacheDel(this.subscriptionKey(business.id));
         await this.myRedisService.cacheDel(this.businessSubKey(business.ownerId));
         await this.myRedisService.cacheDel(this.agentsKey(business.ownerId));
     }

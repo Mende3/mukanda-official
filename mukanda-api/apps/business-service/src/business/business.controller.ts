@@ -84,4 +84,28 @@ export class BusinessController {
     return this.businessService.remove(body);
   }
 
+  @MessagePattern('quota.config.get')
+  async getQuotaConfig(@Payload() payload: { businessId: string }) {
+    const quota = await this.businessService.getConfig(payload.businessId);
+    return { limit: quota.limit };
+  }
+
+  @EventPattern('ai.usage.consumed')
+  async handleAiUsageConsumed(
+    @Payload() payload: { businessId: string; quantity: number; usedSnapshot: number },
+  ) {
+    await this.businessService.recordUsage(payload.businessId, payload.quantity, payload.usedSnapshot);
+  }
+
+  // pode ficar no mesmo QuotaEventsController, ou um RateConfigController separado
+  @MessagePattern('rate.config.get')
+  async getRateConfig(@Payload() payload: { businessId: string }) {
+    const subscription = await this.businessService.getSubscription(payload.businessId);
+    
+    return {
+      burstTokens: subscription.plan.rateBurstTokens,
+      refillPerSec: subscription.plan.rateRefillPerSec,
+    };
+}
+
 }

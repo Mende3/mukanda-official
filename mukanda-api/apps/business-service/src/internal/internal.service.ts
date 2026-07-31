@@ -21,6 +21,8 @@ export class InternalService {
   private agentsKey = (phoneNumber: string) => `business:phone:${phoneNumber}:agents-n8n.context`;
   private productsKey = (phoneNumber: string) => `business:phone:${phoneNumber}:products-n8n.context`;
   private availablityKey   = (phoneNumber: string) => `business:phone:${phoneNumber}:availablity-n8n.context`;
+  private sessionClientKey = (businessId: string, phoneNumber: string) => `session:${businessId}:${phoneNumber}`;
+  private engadedClient = (businessId: string) => `engaded:${businessId}`
 
   // helpers
 
@@ -70,6 +72,8 @@ export class InternalService {
       where: {businessId: businessId},
       select: {
         name: true,
+        status: true,
+        isEnabled: true,
         description: true,
         systemPrompt: true,
         personality: true,
@@ -204,6 +208,45 @@ export class InternalService {
     const agent = await this.findAgent (id, AgentType.CONVERSATION);
 
     return  agent;
+  }
+
+
+  // AI
+
+  async registerClientTTL (phoneNumber: string, clientNumber: string) {
+    const business = await this.findBusinessByPhoneNumber(phoneNumber)
+
+    const sessionKey = this.sessionClientKey(business.id, clientNumber);
+    const hasActiveSession = await this.myRedisService.cacheGet (sessionKey);
+
+    if (!hasActiveSession) {
+      await this.myRedisService.cachezAdd (
+        this.engadedClient(business.id),
+        clientNumber
+      );
+    }
+
+    await this.myRedisService.cacheSet(
+      sessionKey,
+      '1',
+      30*60
+    );
+
+    return {'message': 'numbero do client guardado'};
+  }
+
+  async allClientsTTL (phoneNumber: string) {
+    const business = await this.findBusinessByPhoneNumber(phoneNumber)
+
+    const clientsNumber = await this.myRedisService.cachezRangeActive (this.engadedClient(business.id));
+
+    const context = clientsNumber.map((clientNumber) => ({
+      number: clientNumber.split(':')[0],
+      remoteJID: clientNumber.split(':')[1]
+    }))
+
+    console.log (context);
+    return context;
   }
 
 }

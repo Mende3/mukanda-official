@@ -1,0 +1,321 @@
+{
+  "name": "SUGGESTIONS v1.0",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        16,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        944,
+        320
+      ],
+      "id": "60866d15-faec-431b-897b-e06139dcbcdc",
+      "name": "Mistral Cloud Chat Model1",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "fuJUdLnV8WsKW48N",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "afb5ceb8-dac3-4d01-a4d6-cb3ae5093651",
+              "leftValue": "={{ $json.sugest_manager_context.isEnabled }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a2a57026-0a44-4ec0-9fa6-a2247727f7b3",
+              "leftValue": "={{ $json.sugest_manager_context.status }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        352
+      ],
+      "id": "ffa9add3-a87f-4f9e-b9a2-e7c3e0ddb027",
+      "name": "AS status"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.sugestAgent.prompt }}\n\nNo caso o produto que irás sugerir é este\nNome do cliente: {{ $json.utils_fields.sender_data.sender_name }}\n{{ $json.reply }}\n\n## Como sugerir\n- Usa estratégias de marketing e persuasão adaptadas ao contexto da conversa\n- Tom natural e directo — estás no WhatsApp, não num catálogo\n- Destaca o valor do produto, não só o preço\n- Máximo 3 frases por produto — sem exageros\n- Usa *negrito* para destacar pontos-chave\n- PARA UMA MELHOR IMERSÃO trata o cliente pelo seu nome\n- Dá SEMPRE o preço do produto do jeito que você recebe\n- Nunca age como uma IA, fale diretamente ao cliente, como um atendente/a\n- Nunca digas que és uma IA",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        944,
+        144
+      ],
+      "id": "9de8152a-4a2f-4024-b6ce-def9884388d3",
+      "name": "Agente de sugestão"
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $json.business_context.whatsappInstanceToken }}",
+        "sendTextNumber": "={{ $json.utils_fields.sender_data.remoteJID }}",
+        "sendTextContent": "={{ $json.output }}",
+        "sendTextDelay": 3,
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        144
+      ],
+      "id": "552f4607-ba7c-42a4-a9d9-b5dd67f4c72a",
+      "name": "enviar sugestão",
+      "credentials": {
+        "evoGoApi": {
+          "id": "lGoaXRaAHpusYS6P",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        800,
+        496
+      ],
+      "id": "d89543d7-692b-41b8-84b6-2dc9b24798f7",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85774a88-e9d5-4a37-8a3e-4fda8c05b54c",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "6511de26-861c-4d33-a674-8f06a83d4426",
+              "name": "business_context",
+              "value": "={{ $('When Executed by Another Workflow').item.json.business_context }}",
+              "type": "object"
+            },
+            {
+              "id": "3dbcbe67-4027-4012-a29f-a679cc54f163",
+              "name": "utils_fields.sender_data",
+              "value": "={{ $('When Executed by Another Workflow').item.json.utils_fields.sender_data }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        144
+      ],
+      "id": "aef34a67-51a3-43a2-a858-ff0a1230b38a",
+      "name": "extract"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env[\"MUKANDA_API_QUOTACHECK_ENDPOINT\"]}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "businessId",
+              "value": "={{ $json.business_status[0].business.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        480
+      ],
+      "id": "a7c8fd34-67c3-4214-bc08-3561d1a1aeb8",
+      "name": "quota_check"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "business_context": {
+            "id": "3f07b949-7931-4236-83d8-5461d2b235ee",
+            "name": "Mendes Fashion",
+            "phone": "+244956632348",
+            "description": "O meu negócio",
+            "isActive": true,
+            "whatsappInstanceId": "2afd6c31-05cd-47aa-b169-c22cfb760290",
+            "whatsappInstanceToken": "$2b$10$L6OLAJzXa5NPMJPazkn0wux0WNqzMdh3XmLWdhbSsetoCkCiragm2"
+          },
+          "sugest_manager_context": {
+            "name": "Kulombola",
+            "status": false,
+            "isEnabled": false,
+            "description": "Agente de sugestões e recomendações",
+            "systemPrompt": "És o Kulombola, assistente virtual da Mendes Fashion. O teu objetivo é sugerir produtos relevantes ao cliente no momento certo.",
+            "personality": "friendly",
+            "pollMinInterval": null,
+            "pollTrigger": null
+          },
+          "utils_fields": {
+            "query_fields": {
+              "whatsappInstanceId": "2afd6c31-05cd-47aa-b169-c22cfb760290",
+              "whatsappInstanceToken": "$2b$10$L6OLAJzXa5NPMJPazkn0wux0WNqzMdh3XmLWdhbSsetoCkCiragm2"
+            },
+            "instance_data": {
+              "instance_name": "+244956632348",
+              "phoneNumber": "+244956632348"
+            },
+            "sender_data": {
+              "sender_name": "Mendes",
+              "remoteJID": "61628720656597@lid",
+              "message": "queria algumas sugestões de encomendas da sua loja"
+            }
+          },
+          "reply": "Claro! Aqui está uma simulação de sugestão de produtos para si:\n\n- *Relógio Feminino* - 18.000 Kz\n  *Descrição*: Relógio elegante com pulseira de aço inoxidável, ideal para o dia a dia.\n\n- *Cinto de Couro* - 5.500 Kz\n  *Descrição*: Cinto ajustável em couro genuíno, combina com calças e saias.\n\n- *Meias de Luxo* - 2.000 Kz\n  *Descrição*: Par de meias confortáveis e macias, feitas com tecido respirável.\n\nDeseja encomendar algum destes produtos ou precisa de mais sugestões?"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AS status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente de sugestão",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AS status": {
+      "main": [
+        [
+          {
+            "node": "Agente de sugestão",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente de sugestão": {
+      "main": [
+        [
+          {
+            "node": "extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract": {
+      "main": [
+        [
+          {
+            "node": "enviar sugestão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "681819c0-d576-473d-bc67-97aede5c0fa5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d7662fcae9c2960c48cc8b4468cfc69e57687abec22f4d3b5ec4dcc44e117a1"
+  },
+  "nodeGroups": [],
+  "id": "OocaWvBiATDLU12u",
+  "tags": []
+}

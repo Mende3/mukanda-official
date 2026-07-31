@@ -17,6 +17,9 @@ import { UploadService } from '../apps/business/upload/upload.service';
 import { InternalController } from '../apps/business/internal/internal.controller';
 import { AdminController } from '../apps/business/admin/admin.controller';
 import { StripeController } from '../apps/business/stripe/stripe.controller';
+import { QuotaService } from '../apps/business/internal/quota/quota.service';
+import { RateLimitService } from '../apps/business/internal/quota/rate.limit.service';
+import { MyRedisModule } from '@app/redis';
 
 @Module({
   imports: [
@@ -62,6 +65,7 @@ import { StripeController } from '../apps/business/stripe/stripe.controller';
         },
       ]),
     }),
+    MyRedisModule,
   ],
   controllers: [
     ApiGatewayController,
@@ -84,6 +88,8 @@ import { StripeController } from '../apps/business/stripe/stripe.controller';
     },
     ApiGatewayService,
     UploadService,
+    QuotaService,
+    RateLimitService,
   ],
 })
 export class ApiGatewayModule {}

@@ -5,6 +5,7 @@ import {
   REDIS_CACHE,
   REDIS_SESSION,
   REDIS_RATE,
+  REDIS_AI,
 } from './constants/redis.consts';
 
 function createRedisClient(db: number) {
@@ -24,8 +25,9 @@ function createRedisClient(db: number) {
     { provide: REDIS_CACHE,   useFactory: () => createRedisClient(0) },
     { provide: REDIS_SESSION, useFactory: () => createRedisClient(1) },
     { provide: REDIS_RATE,    useFactory: () => createRedisClient(2) },
+    { provide: REDIS_AI,      useFactory: () => createRedisClient(3) },
     MyRedisService,
   ],
-  exports: [MyRedisService, REDIS_CACHE, REDIS_SESSION, REDIS_RATE],
+  exports: [MyRedisService, REDIS_CACHE, REDIS_SESSION, REDIS_RATE, REDIS_AI],
 })
 export class MyRedisModule {}

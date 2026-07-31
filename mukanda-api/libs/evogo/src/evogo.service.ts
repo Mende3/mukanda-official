@@ -83,12 +83,11 @@ export class EvogoService implements OnModuleInit {
                     immediate: true,
                     phone: instancePhone,
                     subscribe: [
-                        'MESSAGES_UPSERT',
-                        'MESSAGES_UPDATE',
-                        'CONNECTION_UPDATE',
-                        'QRCODE_UPDATED',
-                        'CONTACTS_UPSERT',
-                    ],                    
+                        'MESSAGE',
+                        'SEND_MESSAGE',
+                        'CONNECTION',
+                        'QRCODE',
+                    ],                
                     webhookUrl: this.n8nTrigger    
                 },
                 {

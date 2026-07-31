@@ -1,6 +1,6 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
-import { REDIS_CACHE, REDIS_SESSION, REDIS_RATE } from './constants/redis.consts';
+import { REDIS_CACHE, REDIS_SESSION, REDIS_RATE, REDIS_AI } from './constants/redis.consts';
 
 const TOKEN_BUCKET_LUA = `
 local key = KEYS[1]
@@ -61,6 +61,7 @@ export class MyRedisService implements OnModuleInit {
     @Inject(REDIS_CACHE) private readonly cache: Redis,
     @Inject(REDIS_SESSION) private readonly session: Redis,
     @Inject(REDIS_RATE) private readonly rate: Redis,
+    @Inject(REDIS_AI) private readonly ai: Redis,
   ) {}
 
   onModuleInit() {
@@ -83,6 +84,18 @@ export class MyRedisService implements OnModuleInit {
 
   async cacheDel(key: string): Promise<void> {
     await this.cache.del(key);
+  }
+
+  async cacheIncr(key: string): Promise<number> {
+    return this.cache.incr(key);
+  }
+
+  async cacheDecr(key: string): Promise<number> {
+    return this.cache.decr(key);
+  }
+
+  async cacheExpire(key: string, ttlSeconds: number): Promise<void> {
+    await this.cache.expire(key, ttlSeconds);
   }
 
   // --- Session (db 1) ---
@@ -132,4 +145,39 @@ export class MyRedisService implements OnModuleInit {
   getRateClient(): Redis {
     return this.rate;
   }
+
+  // --- IA (db 3) ---
+  
+  async cachezAdd (key: string, clientNumber: string) {
+    await this.ai.zadd (
+      key,
+      Date.now(),
+      clientNumber
+    );
+  }
+
+  async cachezIncreby (key: string, clientNumber: string) {
+    await this.ai.zincrby (
+      key,
+      20 * 24 * 60 * 60 * 1000,
+      clientNumber
+    );
+  }
+  
+  async cachezRemrangebyscore (key: string)
+  {
+    const cutoff = Date.now() - (20 * 24 * 60 * 60 * 1000);
+
+    await this.ai.zremrangebyscore (
+      key,
+      '-inf',
+      cutoff
+    );
+  }
+
+  async cachezRangeActive(key: string): Promise<string[]> {
+    const cutoff = Date.now() - (20 * 24 * 60 * 60 * 1000);
+    return this.ai.zrangebyscore(key, cutoff, '+inf');
+  }
+
 }

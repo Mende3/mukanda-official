@@ -1,5 +1,4 @@
 {
-  "name": "CONVERSATION v1.1",
   "nodes": [
     {
       "parameters": {
@@ -161,8 +160,8 @@
       "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
       "typeVersion": 1.5,
       "position": [
-        -1248,
-        576
+        -1200,
+        544
       ],
       "id": "d15cfe3d-eb83-4dc3-a59b-1d3bed430c9b",
       "name": "Redis Chat Memory",
@@ -176,9 +175,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.utils_fields[0].sender_data.message }}",
+        "text": "={{ $('When Executed by Another Workflow').item.json.utils_fields[0].sender_data.message }}",
         "options": {
-          "systemMessage": "=={{ $json.business_status[0].agentsOn[0].systemPrompt }}\nÉs simpático, directo e eficiente. Respondes sempre no idioma que o cliente usar.\n\n## Contexto\n- Negócio: {{ $json.business_status[0].business.name }}\n- Cliente: {{ $json.business_status[0].business.description }}\n- Moeda: Kwanza (Kz)\n\n## A tua missão principal\nConversar naturalmente com o cliente. Responder às suas perguntas, apresentar produtos, dar informações sobre o negócio e criar uma boa experiência. A maior parte das conversas não envolve encomendas — e está bem assim.\n\n## Interpretação de horários\n- O endpoint `pegar_horarios` devolve intervalos de disponibilidade, não horas fixas\n- Um intervalo \"00:00 às 23:59\" significa que QUALQUER hora nesse intervalo é válida\n- Exemplo: se o cliente disser \"segunda às 16h\" e o intervalo for \"00:00-24:00\", o horário É válido\n- Só recusas um horário se estiver FORA do intervalo devolvido pelo endpoint\n- Nunca interpretes os limites do intervalo como as únicas horas disponíveis\n\n## O que fazes no dia a dia\n- Cumprimentar e conversar com o cliente de forma natural\n- Responder dúvidas sobre o negócio, produtos e preços — usa `buscar_produtos`\n- Quando o cliente pedir a foto ou imagem de um produto, devolves action `send_image` com o campo `imageKey` do produto — nunca inventas URLs, nunca coloques caminhos no reply\n- Após o cliente mostrar interesse num produto, sugere produtos relacionados via action `send_suggestion`\n- Quando o cliente quiser encomendar, segue o processo de encomenda abaixo\n\n## Formatação\n- Usa formatação WhatsApp: *negrito* para destacar, nunca **negrito**\n- Listas com hífen simples: - item\n- Sem Markdown extra (##, **, __, etc.)\n- Nunca coloques URLs no reply\n\n## Processo de encomenda (só quando o cliente quer encomendar)\n1. Cliente mostra intenção de encomendar → verifica disponibilidade com `pegar_horarios`\n2. Horário inválido → informa os dias e horas disponíveis, regista o interesse mas NÃO crias encomenda\n3. Horário válido → resume os itens, preços, total e horário escolhido → pergunta ao cliente: \"Posso registar a tua encomenda?\"\n4. Cliente confirma com sim/yes/ok/confirmo ou qualquer resposta afirmativa →\n   - Devolves action `confirm_order` com todos os dados da encomenda\n   - Devolves action `send_suggestion` com produtos relacionados aos itens encomendados\n5. Cliente recusa → agradeces e encerras o processo sem criar encomenda\n\n## Regras de imagem\n- Quando o cliente pede foto de um produto, consulta `endpoint para pegar os produtos e informação em estoque` e usa o campo `imageKey` devolvido\n- O campo `imageKey` da action `send_image` deve ser SEMPRE o valor \n  COMPLETO e EXACTO devolvido pelo endpoint — copia caractere por caractere\n  sem remover prefixos, pastas ou extensões\n- Nunca extraias apenas parte do valor — se o endpoint devolver COMPLETO\n  o imageKey na action deve ser exactamente esse valor, sem alterações\n- Nunca constróis URLs, nunca usas o nome do produto como caminho\n- Se o produto não tiver `imageKey`, responde \"Não tenho imagem disponível \n  para este produto\"\n- O imageKey do produto contém o email, a pasta e o nome do ficheiro completo \ncom extensão — copia o campo imageKey tal como está, sem modificar nenhuma parte, \nincluindo o email, a barra, a pasta \"produtos/\", o uuid, o underscore, \no nome e a extensão (.jpg, .png, etc.)\n\n## Regras gerais\n- Nunca inventes produtos ou preços — consulta sempre `endpoint para pegar os produtos e informação em estoque`\n- Nunca uses `pegar_horarios` a não ser que o cliente queira encomendar\n- Nunca digas que és uma IA\n- O id dos produtos é informação interna. NUNCA o revelar ao cliente\n- Nunca coloques URLs no reply — usa sempre actions\n- O teu único domínio é este negócio: produtos, encomendas e informações do negócio\n- Se o cliente fizer perguntas fora deste domínio, responde: \"Só posso ajudar com informações sobre os nossos produtos e encomendas. Posso ajudar com alguma dessas questões?\"\n- NUNCA uses conhecimento geral para responder\n- Quando não tiver produto em estoque, diz sempre \"não temos o produto\"\n\n## Formato de resposta (JSON obrigatório, sem texto fora dele)\n{\n  \"reply\": \"mensagem para o cliente\",\n  \"actions\": [\n    {\n        \"type\": \"send_image\",\n        \"payload\": {\n        \"imageKey\": \"email@exemplo.com/produtos/541721ca-66ca-4327-a8cd-4ffb7cd20376_img.jpg\",\n        \"caption\": \"Nome do produto - 0 Kz\"\n        }\n    },\n    {\n      \"type\": \"confirm_order\",\n      \"payload\": {\n        \"scheduledAt\": \"2026-05-20T10:00:00.000Z\",\n        \"clientName\": \"{{ $json.receiver_datas.pushName }}\",\n        \"clientNumber\": \"{{ $json.receiver_datas.sender }}\",\n        \"notes\": null,\n        \"items\": [\n          {\n            \"product_id\": \"uuid do produto\",\n            \"name\": \"nome do produto\",\n            \"quantity\": 1,\n            \"price\": 0\n          }\n        ],\n        \"total\": 0\n      }\n    },\n    {\n      \"type\": \"send_suggestion\",\n      \"payload\": {\n        \"products\": [{ \"name\": \"...\", \"price\": 0, \"description\": \"...\" }]\n      }\n    }\n  ]\n}\nSe não houver nenhuma action, devolve \"actions\": [].\n\n\nNo final de qualquer encomenda avisa ao cliente que sua encomenda foi marcada e será avaliada e assim que entraram em contato com ele"
+          "systemMessage": "=={{ $('When Executed by Another Workflow').item.json.business_status[0].agentsOn[1].systemPrompt }}\nÉs simpático, directo e eficiente. Respondes sempre no idioma que o cliente usar.\n\n## Contexto\n- Negócio: {{ $json.business_status[0].business.name }}\n- Cliente: {{ $json.business_status[0].business.description }}\n- Moeda: Kwanza (Kz)\n\n## A tua missão principal\nConversar naturalmente com o cliente. Responder às suas perguntas, apresentar produtos, dar informações sobre o negócio e criar uma boa experiência. A maior parte das conversas não envolve encomendas — e está bem assim.\n\n## Interpretação de horários\n- O endpoint `pegar_horarios` devolve intervalos de disponibilidade, não horas fixas\n- Um intervalo \"00:00 às 23:59\" significa que QUALQUER hora nesse intervalo é válida\n- Exemplo: se o cliente disser \"segunda às 16h\" e o intervalo for \"00:00-24:00\", o horário É válido\n- Só recusas um horário se estiver FORA do intervalo devolvido pelo endpoint\n- Nunca interpretes os limites do intervalo como as únicas horas disponíveis\n\n## O que fazes no dia a dia\n- Cumprimentar e conversar com o cliente de forma natural\n- Responder dúvidas sobre o negócio, produtos e preços — usa `buscar_produtos`\n- Quando o cliente pedir a foto ou imagem de um produto, devolves action `send_image` com o campo `imageKey` do produto — nunca inventas URLs, nunca coloques caminhos no reply\n- Após o cliente mostrar interesse num produto, sugere produtos relacionados via action `send_suggestion`\n- Quando o cliente quiser encomendar, segue o processo de encomenda abaixo\n\n## Formatação\n- Usa formatação WhatsApp: *negrito* para destacar, nunca **negrito**\n- Listas com hífen simples: - item\n- Sem Markdown extra (##, **, __, etc.)\n- Nunca coloques URLs no reply\n\n## Processo de encomenda (só quando o cliente quer encomendar)\n1. Cliente mostra intenção de encomendar → verifica disponibilidade com `pegar_horarios`\n2. Horário inválido → informa os dias e horas disponíveis, regista o interesse mas NÃO crias encomenda\n3. Horário válido → resume os itens, preços, total e horário escolhido → pergunta ao cliente: \"Posso registar a tua encomenda?\"\n4. Cliente confirma com sim/yes/ok/confirmo ou qualquer resposta afirmativa →\n   - Devolves action `confirm_order` com todos os dados da encomenda\n   - Devolves action `send_suggestion` com produtos relacionados aos itens encomendados\n5. Cliente recusa → agradeces e encerras o processo sem criar encomenda\n\n## Regras de imagem\n- Quando o cliente pede foto de um produto, consulta `endpoint para pegar os produtos e informação em estoque` e usa o campo `imageKey` devolvido\n- O campo `imageKey` da action `send_image` deve ser SEMPRE o valor \n  COMPLETO e EXACTO devolvido pelo endpoint — copia caractere por caractere\n  sem remover prefixos, pastas ou extensões\n- Nunca extraias apenas parte do valor — se o endpoint devolver COMPLETO\n  o imageKey na action deve ser exactamente esse valor, sem alterações\n- Nunca constróis URLs, nunca usas o nome do produto como caminho\n- Se o produto não tiver `imageKey`, responde \"Não tenho imagem disponível \n  para este produto\"\n- O imageKey do produto contém o email, a pasta e o nome do ficheiro completo \ncom extensão — copia o campo imageKey tal como está, sem modificar nenhuma parte, \nincluindo o email, a barra, a pasta \"produtos/\", o uuid, o underscore, \no nome e a extensão (.jpg, .png, etc.)\n\n## Regras gerais\n- Nunca inventes produtos ou preços — consulta sempre `endpoint para pegar os produtos e informação em estoque`\n- Nunca uses `pegar_horarios` a não ser que o cliente queira encomendar\n- Nunca digas que és uma IA\n- O id dos produtos é informação interna. NUNCA o revelar ao cliente\n- Nunca coloques URLs no reply — usa sempre actions\n- O teu único domínio é este negócio: produtos, encomendas e informações do negócio\n- Se o cliente fizer perguntas fora deste domínio, responde: \"Só posso ajudar com informações sobre os nossos produtos e encomendas. Posso ajudar com alguma dessas questões?\"\n- NUNCA uses conhecimento geral para responder\n- Quando não tiver produto em estoque, diz sempre \"não temos o produto\"\n\n## Formato de resposta (JSON obrigatório, sem texto fora dele)\n{\n  \"reply\": \"mensagem para o cliente\",\n  \"actions\": [\n    {\n        \"type\": \"send_image\",\n        \"payload\": {\n        \"imageKey\": \"email@exemplo.com/produtos/541721ca-66ca-4327-a8cd-4ffb7cd20376_img.jpg\",\n        \"caption\": \"Nome do produto - 0 Kz\"\n        }\n    },\n    {\n      \"type\": \"confirm_order\",\n      \"payload\": {\n        \"scheduledAt\": \"2026-05-20T10:00:00.000Z\",\n        \"clientName\": \"{{ $json.receiver_datas.pushName }}\",\n        \"clientNumber\": \"{{ $json.receiver_datas.sender }}\",\n        \"notes\": null,\n        \"items\": [\n          {\n            \"product_id\": \"uuid do produto\",\n            \"name\": \"nome do produto\",\n            \"quantity\": 1,\n            \"price\": 0\n          }\n        ],\n        \"total\": 0\n      }\n    },\n    {\n      \"type\": \"send_suggestion\",\n      \"payload\": {\n        \"products\": [{ \"name\": \"...\", \"price\": 0, \"description\": \"...\" }]\n      }\n    }\n  ]\n}\nSe não houver nenhuma action, devolve \"actions\": [].\n\n\nNo final de qualquer encomenda avisa ao cliente que sua encomenda foi marcada e será avaliada e assim que entraram em contato com ele"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -357,7 +356,7 @@
     {
       "parameters": {
         "toolDescription": "endpoint para pegar as datas e horas disponíveis para encomendas",
-        "url": "=https://192.168.0.117:3000/api/internal/aitool/getfreetimes/{{ $('Preparar Payload Agente').item.json.businessId }}",
+        "url": "={{$env[\"MUKANDA_API_HOST\"]}}/api/internal/business-date?phoneNumber=%2B{{ $('When Executed by Another Workflow').item.json.utils_fields[0].instance_data.phoneNumber.slice(1) }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -495,7 +494,7 @@
     {
       "parameters": {
         "toolDescription": "endpoint para pegar os produtos e informação em estoque",
-        "url": "=https://192.168.0.117:3000/api/internal/aitool/getcompanyproducts/{{ $json.businessId }}",
+        "url": "={{$env[\"MUKANDA_API_HOST\"]}}/api/internal/business-products?phoneNumber=%2B{{ $('When Executed by Another Workflow').item.json.utils_fields[0].instance_data.phoneNumber.slice(1) }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -520,14 +519,15 @@
     },
     {
       "parameters": {
-        "inputSource": "passthrough"
+        "inputSource": "passthrough",
+        "returnOutput": "allRuns"
       },
       "id": "c055762a-8fe7-4141-a639-df2372f30060",
       "typeVersion": 1.1,
       "name": "When Executed by Another Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "position": [
-        -1632,
+        -1776,
         336
       ]
     },
@@ -538,7 +538,7 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
       "typeVersion": 1,
       "position": [
-        -1440,
+        -1296,
         544
       ],
       "id": "bcb94b66-7758-4f3b-855c-2f942c4ce25e",
@@ -549,113 +549,41 @@
           "name": "Mistral Cloud account"
         }
       }
-    }
-  ],
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "json": {
-          "business_status": [
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env[\"MUKANDA_API_QUOTACHECK_ENDPOINT\"]}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "business": {
-                "id": "a281a9ad-44c6-4d2e-b9d3-c84162343c51",
-                "name": "MendesTexh",
-                "phone": "+244956632348",
-                "description": null,
-                "isActive": false,
-                "plan": "BASIC",
-                "whatsappInstanceId": "358000dd-60b3-4350-bc0a-604730135e8d",
-                "whatsappInstanceToken": "$2b$10$M4msM1y4BRmo3weKmHIxGuK5TDboBcpE9jkXGC2cA3xEHcioLiJm2"
-              },
-              "agentsOn": [
-                {
-                  "name": "Kusamba",
-                  "description": "Agente de conversa",
-                  "systemPrompt": "És o Kusamba, assistente virtual da MendesTexh. Responde sempre no idioma da pessoa que te escreve.",
-                  "personality": "friendly",
-                  "pollMinInterval": null,
-                  "pollTrigger": null
-                },
-                {
-                  "name": "Gestor de Encomendas",
-                  "description": "Gere pedidos recebidos por WhatsApp",
-                  "systemPrompt": "És o Gestor de Encomendas, agente de gestão de encomendas da MendesTexh. O teu objetivo é registar e acompanhar as encomendas do cliente.",
-                  "personality": "professional",
-                  "pollMinInterval": null,
-                  "pollTrigger": null
-                },
-                {
-                  "name": "Kulombola",
-                  "description": "Agente de sugestões e recomendações",
-                  "systemPrompt": "És o Kulombola, assistente virtual da MendesTexh. O teu objetivo é sugerir produtos relevantes ao cliente no momento certo.",
-                  "personality": "friendly",
-                  "pollMinInterval": null,
-                  "pollTrigger": null
-                },
-                {
-                  "name": "Agente de Marketing",
-                  "description": "Campanhas e disparos proativos",
-                  "systemPrompt": "És o Promotor, agente de marketing da MendesTexh. O teu objetivo é promover produtos e campanhas relevantes ao cliente de forma natural e persuasiva.",
-                  "personality": "persuasive",
-                  "pollMinInterval": 1,
-                  "pollTrigger": "both"
-                },
-                {
-                  "name": "Agente de Fidelização",
-                  "description": "Programa de fidelização de clientes",
-                  "systemPrompt": "És o Fidelizador, agente de fidelização da MendesTexh. O teu objetivo é reconhecer e recompensar clientes frequentes, promovendo a sua lealdade à marca.",
-                  "personality": "friendly",
-                  "pollMinInterval": null,
-                  "pollTrigger": null
-                },
-                {
-                  "name": "Agente de Feedback",
-                  "description": "Pesquisas de satisfação NPS pós-compra",
-                  "systemPrompt": "És o Avaliador, agente de recolha de feedback da MendesTexh. O teu objetivo é recolher opiniões e avaliações dos clientes após interações ou compras.",
-                  "personality": "professional",
-                  "pollMinInterval": null,
-                  "pollTrigger": null
-                },
-                {
-                  "name": "Agente de Reengagement",
-                  "description": "Reativação de clientes inativos",
-                  "systemPrompt": "És o Reativador, agente de reengajamento da MendesTexh. O teu objetivo é reativar clientes inactivos com mensagens personalizadas e ofertas relevantes.",
-                  "personality": "friendly",
-                  "pollMinInterval": null,
-                  "pollTrigger": null
-                },
-                {
-                  "name": "Qualificador de Leads",
-                  "description": "Qualificação de novos contactos via conversa",
-                  "systemPrompt": "És o Qualificador, agente de qualificação de leads da MendesTexh. O teu objetivo é identificar e qualificar potenciais clientes através de perguntas estratégicas.",
-                  "personality": "professional",
-                  "pollMinInterval": null,
-                  "pollTrigger": null
-                }
-              ]
-            }
-          ],
-          "utils_fields": [
-            {
-              "query_fields": {
-                "whatsappInstanceId": "358000dd-60b3-4350-bc0a-604730135e8d",
-                "whatsappInstanceToken": "$2b$10$M4msM1y4BRmo3weKmHIxGuK5TDboBcpE9jkXGC2cA3xEHcioLiJm2"
-              },
-              "instance_data": {
-                "instance_name": "+244956632348",
-                "phoneNumber": "+244956632348"
-              },
-              "sender_data": {
-                "sender_name": "",
-                "remoteJID": "61628720656597@lid",
-                "message": "oi"
-              }
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
             }
           ]
-        }
-      }
-    ]
-  },
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "businessId",
+              "value": "={{ $json.business_status[0].business.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1536,
+        336
+      ],
+      "id": "83d07621-b4d4-40fd-a54b-e327cfeea6a6",
+      "name": "quota_check"
+    }
+  ],
   "connections": {
     "extract OM": {
       "main": [
@@ -832,7 +760,7 @@
       "main": [
         [
           {
-            "node": "Agente de conversa",
+            "node": "quota_check",
             "type": "main",
             "index": 0
           }
@@ -849,20 +777,22 @@
           }
         ]
       ]
+    },
+    "quota_check": {
+      "main": [
+        [
+          {
+            "node": "Agente de conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": true,
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "versionId": "b2740eae-18b2-4d0a-961a-2a235b21ec4c",
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2d7662fcae9c2960c48cc8b4468cfc69e57687abec22f4d3b5ec4dcc44e117a1"
-  },
-  "nodeGroups": [],
-  "id": "3kced9krrVPjXUyO",
-  "tags": []
+  }
 }

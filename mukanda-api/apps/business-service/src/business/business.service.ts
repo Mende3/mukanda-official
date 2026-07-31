@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RpcException } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
@@ -9,9 +9,12 @@ import { CreateCustomAgentDto } from './dto/create-custom-agent.dto';
 import { EvogoService } from '@app/evogo';
 import { MyRedisService } from '@app/redis';
 import { StripePService } from '@app/stripe_p';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class BusinessService {
+
+  private readonly logger = new Logger(BusinessService.name);
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -85,6 +88,14 @@ export class BusinessService {
 
     return business;
   }
+
+    private endOfToday(): Date {
+        return DateTime.now().setZone('Africa/Luanda').endOf('day').toJSDate();
+    }
+
+    private startOfToday(): Date {
+        return DateTime.now().setZone('Africa/Luanda').startOf('day').toJSDate();
+    }
 
   // ─── System Prompts ──────────────────────────────────
 
@@ -244,6 +255,38 @@ export class BusinessService {
 
   private agentKey = (userId: string, agentId: string) => `business:user:${userId}:agent:${agentId}`;
   private contextAgentKey = (businessId: string, agentType: string) => `business:${businessId}:agentType:${agentType}-n8n.context`;
+
+  private subscriptionKey = (businessId: string) => `business:user:${businessId}`;
+
+  async getSubscription (businessId: string) {
+    
+    let subscription;
+
+    const cacheKey = this.subscriptionKey(businessId);
+    const cache = await this.myRedisService.cacheGet (cacheKey);
+
+    if (cache) {
+      subscription = JSON.parse(cache);
+    } else {
+      subscription = await this.prismaService.subscription.findUniqueOrThrow({
+        where: { businessId },
+        include: { plan: true },
+     });
+    }
+
+    if (!subscription) throw new RpcException({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'subscrição não encontrada',
+    });
+
+    await this.myRedisService.cacheSet (
+      cacheKey,
+      JSON.stringify(subscription),
+      1800
+    );
+
+    return subscription;
+  }
   
   // ─── CRUD ────────────────────────────────────────────
 
@@ -339,6 +382,14 @@ export class BusinessService {
               slots: { create: this.buildAvailabilitySlots() },
             },
           },
+          aiUsageQuota: {
+            create: {
+              used: 0,
+              limit: freePlan.aiMessageLimit,
+              periodStart: this.startOfToday(),
+              periodEnd: this.endOfToday()
+            }
+          }
         },
       });
 
@@ -658,5 +709,29 @@ export class BusinessService {
     }
 
     return {message: "business deletado"};
+  }
+
+  async getConfig(businessId: string): Promise<{ limit: number | null }> {
+    const quota = await this.prismaService.aiUsageQuota.findUnique({ where: { businessId } });
+    if (!quota) throw new Error(`AiUsageQuota não encontrado para business ${businessId}`);
+
+    return { limit: quota.limit };
+  }
+
+  async recordUsage(businessId: string, quantity: number, usedSnapshot: number): Promise<void> {
+    try {
+      await this.prismaService.aiUsageEvent.create({ data: { businessId, quantity } });
+    } catch (err) {
+      this.logger.error(`Falha ao gravar usage event para ${businessId}`, err);
+    }
+
+    try {
+      await this.prismaService.aiUsageQuota.update({
+        where: { businessId },
+        data: { used: usedSnapshot }, // usa o valor que já veio do Redis, não recalcula
+      });
+    } catch (err) {
+      this.logger.error(`Falha ao atualizar quota para ${businessId}`, err);
+    }
   }
 }

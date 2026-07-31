@@ -21,9 +21,28 @@ export class InternalController {
     return this.internalService.getBusinessDate (data.phoneNumber);
   }
 
+  // agents
   @MessagePattern('get-conversation-agent')
   async getConversationAgent(@Payload() data: {phoneNumber: string, agentType: string}) {
     return this.internalService.getConversationAgent(data.phoneNumber, data.agentType);
   }
+
+  // 
+  @MessagePattern('create-order-form-workflow')
+  async createOrderFromWorkFlow (@Payload() data:{
+  }) {
+
+  }
+
+  @MessagePattern('ai-register-client-ttl')
+  async registerClientTTL(@Payload() data: {phoneNumber: string, clientNumber: string}) {
+    return this.internalService.registerClientTTL (data.phoneNumber, data.clientNumber)
+  }
+
+  @MessagePattern('ai-all-clients-ttl')
+  async allClientsTTL(@Payload() data: {phoneNumber}) {
+    return this.internalService.allClientsTTL (data.phoneNumber)
+  }
+
 
 }
