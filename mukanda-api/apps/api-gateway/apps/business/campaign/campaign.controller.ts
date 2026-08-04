@@ -91,6 +91,7 @@ export class CampaignController {
     async update(
         @Req() req,
         @Param('id') campaignId: string,
+        @Query('agentId') agentId: string,
         @Query() body: UpdateCampaignDto,
     ) {
         return firstValueFrom(
@@ -98,6 +99,7 @@ export class CampaignController {
                 .send('campaign-update', {
                     user: req.user,
                     campaignId: campaignId,
+                    agentId,
                     message: body.message,
                     name: body.name,
                     rules: body.rules,

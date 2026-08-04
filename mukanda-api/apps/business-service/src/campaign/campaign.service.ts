@@ -6,6 +6,8 @@ import { AgentType } from 'apps/business-service/generated/prisma';
 import { Campaign } from './entities/campaign.entity';
 import { ConfigService } from '@nestjs/config';
 import { MyRedisService } from '@app/redis';
+import { RmqService } from '@app/rmq';
+import { CampaignSchedulerService } from './campaign-scheduler/campaign-scheduler.service';
 
 @Injectable()
 export class CampaignService {
@@ -14,6 +16,8 @@ export class CampaignService {
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly myRedisService: MyRedisService,
+    private readonly rmq: RmqService,
+    private readonly campaignScheduler: CampaignSchedulerService,
   ) {}
 
 
@@ -105,6 +109,9 @@ export class CampaignService {
 
     await this.myRedisService.cacheDel(this.campaignListKey(userId));
 
+    campaign.rules.forEach((rule) => {
+      this.campaignScheduler.registerRuleJobs({ ...rule, campaign });
+    })
 
     return this.withFlyerUrls(campaign);
   }
@@ -228,7 +235,11 @@ export class CampaignService {
           message: 'Campanha não encontrada',
         });
       }
-      
+
+      campaign.rules.forEach((oldRule) => {
+        this.campaignScheduler.unregisterRuleJobs(oldRule.id);
+      });
+            
       // se vierem rules novas, substitui as antigas (delete + create)
       const updated = await this.prismaService.campaign.update({
         where: { id: campaignId },
@@ -243,6 +254,10 @@ export class CampaignService {
           }),
         },
         include: {rules: true},
+      });
+
+      updated.rules.forEach((newRule) => {
+        this.campaignScheduler.registerRuleJobs({ ...newRule, campaign: updated });
       });
 
       const result = this.withFlyerUrls (updated)
@@ -293,9 +308,19 @@ export class CampaignService {
       });
     }
 
+    const campaignWithRules = await this.prismaService.campaign.findUnique({
+      where: { id: campaignId },
+      include: { rules: true },
+    });
+
+    campaignWithRules?.rules.forEach((rule) => {
+      this.campaignScheduler.unregisterRuleJobs(rule.id);
+    });
+
     await this.prismaService.campaign.delete({
       where: { id: campaignId },
     });
+
 
     await this.myRedisService.cacheDel(this.campaignListKey(userId));
     await this.myRedisService.cacheDel(this.campaignKey(userId, body.campaignId));
@@ -320,4 +345,5 @@ export class CampaignService {
 
     return updated;
   }
+
 }

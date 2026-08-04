@@ -25,6 +25,7 @@
     "@aws-sdk/client-s3": "^3.1068.0",
     "@aws-sdk/s3-request-presigner": "^3.1068.0",
     "@casl/ability": "^7.0.0",
+    "@golevelup/nestjs-rabbitmq": "^9.0.2",
     "@golevelup/nestjs-stripe": "^3.0.0",
     "@nestjs-labs/nestjs-redis": "^11.0.4",
     "@nestjs-modules/ioredis": "^2.2.1",
@@ -112,6 +113,7 @@
       "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1",
       "^@app/redis(|/.*)$": "<rootDir>/libs/redis/src/$1",
       "^@app/resend(|/.*)$": "<rootDir>/libs/resend/src/$1",
+      "^@app/rmq(|/.*)$": "<rootDir>/libs/rmq/src/$1",
       "^@app/stripe_p(|/.*)$": "<rootDir>/libs/stripe_p/src/$1"
     }
   }

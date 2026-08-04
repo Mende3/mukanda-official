@@ -60,6 +60,40 @@ export class InternalService {
     return business;
   }
 
+  async findBusinessById (id: string) {
+
+    // const businessKey = this.genBusinessKey (phone);
+    // const cache = await this.myRedisService.cacheGet(businessKey);
+    // if (cache) return JSON.parse(cache);
+    
+    const business = await this.prismaService.business.findUnique({
+      where: {id},
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        description: true,
+        isActive: true,
+        // plan: true,
+        whatsappInstanceId: true,
+        whatsappInstanceToken: true,
+      }
+    });
+
+    if (!business) throw new RpcException ({
+      statusCode: HttpStatus.NOT_FOUND,
+      message: "business não existe"
+    });
+
+    // await this.myRedisService.cacheSet (
+    //   businessKey,
+    //   JSON.stringify(business),
+    //   1800,
+    // );
+
+    return business;
+  }
+
   async getAgentsOn (
     phoneNumber: string,
     businessId: string
@@ -89,6 +123,18 @@ export class InternalService {
     );
 
     return agents;
+  }
+
+  async getBusinessOwnerById (businessId: string) {
+    const business = await this.findBusinessById (businessId);
+    const { id } = business;
+    const { phone } = business;
+    const agents = await this.getAgentsOn (phone.slice(1), id);
+
+    return {
+      business: business,
+      agentsOn: agents
+    }
   }
 
 
@@ -238,7 +284,7 @@ export class InternalService {
   async allClientsTTL (phoneNumber: string) {
     const business = await this.findBusinessByPhoneNumber(phoneNumber)
 
-    const clientsNumber = await this.myRedisService.cachezRangeActive (this.engadedClient(business.id));
+    const clientsNumber = await this.myRedisService.cachezRangeActive(this.engadedClient(business.id));
 
     const context = clientsNumber.map((clientNumber) => ({
       number: clientNumber.split(':')[0],

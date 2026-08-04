@@ -163,7 +163,11 @@ export class MyRedisService implements OnModuleInit {
       clientNumber
     );
   }
-  
+
+  async cachezRangeByScore(key: string, min: number, max: number): Promise<string[]> {
+    return this.ai.zrangebyscore(key, min, max);
+  }
+
   async cachezRemrangebyscore (key: string)
   {
     const cutoff = Date.now() - (20 * 24 * 60 * 60 * 1000);

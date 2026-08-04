@@ -6,6 +6,11 @@ import { InternalService } from './internal.service';
 export class InternalController {
   constructor(private readonly internalService: InternalService) {}
 
+  @MessagePattern('get-business-owner-id')
+  async getBusinessOwnerById (@Payload() data: {businessId: string}) {
+    return this.internalService.getBusinessOwnerById (data.businessId);
+  }
+
   @MessagePattern('get-business-owner')
   async getBusinessOwner (@Payload() data: {phoneNumber: string}) {
     return this.internalService.getBusinessOwner (data.phoneNumber);

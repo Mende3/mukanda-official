@@ -1,0 +1,586 @@
+{
+  "name": "MARKETING v1.1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "campaign-dispatch",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -704,
+        32
+      ],
+      "id": "ce5db6f2-23b0-416b-9525-8b1b76c6e329",
+      "name": "Webhook",
+      "webhookId": "80f8b86d-35ae-4f27-805d-9a56d0a60518"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "67220965-fd3b-4d45-b175-38eabe790c1f",
+              "leftValue": "={{ $json.headers['x-internal-key-campaign'] }}",
+              "rightValue": "={{ $env['N8N_INTERNAL_KEY_CAMPAIGN'] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -496,
+        32
+      ],
+      "id": "587ccf8b-c73d-4a12-899e-db648752d443",
+      "name": "validate key"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.agentsOn[3].systemPrompt }}\n\nTu escreves UMA ÚNICA mensagem de WhatsApp promocional, usando boas práticas de marketing direto (gancho inicial, benefício claro, chamada à ação curta).\n\nFoco da campanha: {{ $('validate key').item.json.body.aiPromptHint }}\n\nBase de conteúdo — a mensagem final tem de estar em conformidade com esta informação, sem contradizê-la nem adicionar factos que não estão aqui:\n\"{{ $('Webhook').item.json.body.message }}\"\n\nRegras obrigatórias:\n- NÃO inventes preços, prazos, percentagens de desconto, nomes de produtos ou qualquer dado que não esteja explicitamente na base de conteúdo acima.\n- Se a base de conteúdo não mencionar um detalhe (ex: desconto exato, data limite), NÃO o inventes — escreve de forma genérica em vez disso.\n- Gera APENAS uma mensagem, pronta para enviar. Nunca múltiplas variantes, formatos ou seções.\n- Sem markdown (nada de **, ###, ---, listas com traços).\n- Sem placeholders como [Nome] ou [Link] — se precisares de saudação, usa algo genérico (\"Olá!\").\n- Máximo 3-4 linhas curtas, tom natural e humano de WhatsApp, no máximo 1-3 emojis relevantes.\n- Responde SÓ com o texto final da mensagem — nada antes, nada depois, sem explicações sobre o que fizeste.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        272,
+        -128
+      ],
+      "id": "165b5455-514f-45f7-9e45-4ca9bb8dcfe0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "url": "={{$env[\"MUKANDA_API_HOST\"]}}/api/internal/business-owner-id?businessId={{ $json.body.businessId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -240,
+        -128
+      ],
+      "id": "4c3e34b7-4022-462a-bedf-bf82137eb2ae",
+      "name": "getBusinessByBusinessId"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        272,
+        16
+      ],
+      "id": "08e6f019-fb6a-4691-a5ac-a42bd846e48a",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "fuJUdLnV8WsKW48N",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c24d0e81-6ba7-4e0c-a14c-e61c5a653c5d",
+              "name": "ai_output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "b78037ee-a8b2-431c-bc26-eba524bc77bb",
+              "name": "body.clients",
+              "value": "={{ $('validate key').item.json.body.clients }}",
+              "type": "array"
+            },
+            {
+              "id": "0c252c45-9d36-4474-8db8-2a1b5f5de37e",
+              "name": "business.whatsappInstanceToken",
+              "value": "={{ $('getBusinessByBusinessId').item.json.business.whatsappInstanceToken }}",
+              "type": "string"
+            },
+            {
+              "id": "f9ce8828-53f2-4f12-8b18-ed6a2d5da6aa",
+              "name": "body.flyerKey",
+              "value": "={{ $('Webhook').item.json.body.flyerKey }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        -128
+      ],
+      "id": "ca4b0798-3e70-4a71-b4f9-5cc2b2cd6fb9",
+      "name": "extract"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env[\"MUKANDA_API_QUOTACHECK_ENDPOINT\"]}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "businessId",
+              "value": "={{ $json.business.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        16,
+        -128
+      ],
+      "id": "30fba319-173c-4631-89d0-2c7573abb27c",
+      "name": "quota_check"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.clients",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -128
+      ],
+      "id": "d87ac4ea-3eb3-4038-b8da-faf117092eb2",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        976,
+        -128
+      ],
+      "id": "f542d40b-42a9-4167-b521-034831a6c245",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $('extract').item.json.business.whatsappInstanceToken }}",
+        "sendTextNumber": "={{ $('extract').item.json.body.clients[0].split(':')[1] }}",
+        "sendTextContent": "={{ $('extract').item.json.ai_output }}",
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "16bb58ce-9d73-4798-b682-908982ce71d2",
+      "name": "Send text message",
+      "credentials": {
+        "evoGoApi": {
+          "id": "lGoaXRaAHpusYS6P",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (8 - 3 + 1) + 3) }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1664,
+        272
+      ],
+      "id": "1c01e7ad-6ce8-4802-9f7b-fab2571aca53",
+      "name": "Wait",
+      "webhookId": "0299078a-39a1-482b-a5dd-bedfe12c9a6e"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: \"accepted\", campaignId: $json.body.campaignId } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        -272
+      ],
+      "id": "8913ca2e-8ded-49b6-b7ca-5a3b494f616c",
+      "name": "Respond Accepted"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { error: \"unauthorized\" } }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        256
+      ],
+      "id": "6a076330-0eb1-4bd6-9e2a-11a5ccc3dc26",
+      "name": "Respond Unauthorized"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06bf6663-521b-41c3-97d3-ddf0fb4d45d4",
+              "leftValue": "={{ $('extract').item.json.body.flyerKey }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        -112
+      ],
+      "id": "be3ab5d0-bb29-4cfd-b611-1b22a7475f74",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "operation": "sendMedia",
+        "instanceApiKey": "={{ $('extract').item.json.business.whatsappInstanceToken }}",
+        "sendMediaNumber": "={{ $('extract').item.json.body.clients[0].split(':')[1] }}",
+        "sendMediaUrl": "={{$env[\"R2_PUBLIC_URL\"]}}/{{ $('extract').item.json.body.flyerKey }}",
+        "sendMediaCaption": "={{ $('extract').item.json.ai_output }}",
+        "sendMediaAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        -240
+      ],
+      "id": "626e034f-e6a3-4b62-899d-96baf533a3e0",
+      "name": "Send media from URL",
+      "credentials": {
+        "evoGoApi": {
+          "id": "lGoaXRaAHpusYS6P",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -128
+      ],
+      "id": "b97b4930-4839-4d07-ba9c-cadfa25b46b7",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "x-internal-key-campaign": "cbaf64f1d026cdb9d84d760de7b1a58844023b2cc27e720eac9335f22143a79c",
+            "user-agent": "axios/1.18.0",
+            "content-length": "285",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "localhost:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "campaignId": "92d8324c-cee8-42ce-b370-61e88f62080f",
+            "ruleId": "550d1f35-22e9-416c-8a14-4c70db9671c5",
+            "businessId": "3f07b949-7931-4236-83d8-5461d2b235ee",
+            "message": "Olá mendes.",
+            "flyerKey": null,
+            "aiPromptHint": "Foca nos descontos de Natal",
+            "clients": [
+              "244936854246:61628720656597@lid"
+            ]
+          },
+          "webhookUrl": "http://n8n:5678/webhook-test/campaign-dispatch",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "validate key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate key": {
+      "main": [
+        [
+          {
+            "node": "getBusinessByBusinessId",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getBusinessByBusinessId": {
+      "main": [
+        [
+          {
+            "node": "quota_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send text message": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send media from URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send media from URL": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "quota_check": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ae3cfdb9-00fe-44ba-8d1b-25b1fde665b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d7662fcae9c2960c48cc8b4468cfc69e57687abec22f4d3b5ec4dcc44e117a1"
+  },
+  "nodeGroups": [],
+  "id": "OdYq6afMmKRbOJsF",
+  "tags": []
+}

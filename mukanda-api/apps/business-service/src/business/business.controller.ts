@@ -106,6 +106,6 @@ export class BusinessController {
       burstTokens: subscription.plan.rateBurstTokens,
       refillPerSec: subscription.plan.rateRefillPerSec,
     };
-}
+  }
 
 }

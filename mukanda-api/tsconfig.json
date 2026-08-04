@@ -22,6 +22,12 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@app/evogo": [
+        "libs/evogo/src"
+      ],
+      "@app/evogo/*": [
+        "libs/evogo/src/*"
+      ],
       "@app/prisma": [
         "libs/prisma/src"
       ],
@@ -40,21 +46,21 @@
       "@app/resend/*": [
         "libs/resend/src/*"
       ],
-      "@app/evogo": [
-        "libs/evogo/src"
+      "@app/rmq": [
+        "libs/rmq/src"
       ],
-      "@app/evogo/*": [
-        "libs/evogo/src/*"
+      "@app/rmq/*": [
+        "libs/rmq/src/*"
+      ],
+      "@app/shared/*": [
+        "libs/shared/src/index.ts"
       ],
       "@app/stripe_p": [
         "libs/stripe_p/src"
       ],
       "@app/stripe_p/*": [
         "libs/stripe_p/src/*"
-      ],
-      "@app/shared/*":  [
-        "libs/shared/src/index.ts"
-      ],
+      ]
     }
   }
 }

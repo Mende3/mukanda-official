@@ -38,8 +38,22 @@ export class InternalController {
         return { allowed: true };
     }
 
+    
+    @Get('business-owner-id')
+    @ApiOperation({ summary: 'pegar o business atravez do businessId'})
+    async getBusinessOwerById(
+        @Req() req,
+        @Query('businessId') businessId: string,
+    ) {
+        return firstValueFrom (
+            this.businessClient.send('get-business-owner-id', {
+                businessId
+            })
+        )
+    }
+
     @Get('business-owner')
-    @ApiOperation({ summary: 'pegar o business'})
+    @ApiOperation({ summary: 'pegar o business atravez do numero'})
     async getBusinessOwner(
         @Req() req,
         @Query('phoneNumber') phoneNumber: string,
@@ -139,6 +153,17 @@ export class InternalController {
             this.businessClient.send('ai-all-clients-ttl', {
                 phoneNumber,
             })
+        )
+    }
+
+
+    // find all schedule of campaign
+    @Get('all-campaign')
+    @ApiOperation({ summary: 'pegar todas campanhas de clientes'})
+    async allCampaign () {
+        return firstValueFrom (
+            this.businessClient.send('ai-all-campaign', {})
+            .pipe(handlerRcpError)
         )
     }
 }

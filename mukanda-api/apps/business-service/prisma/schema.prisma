@@ -269,16 +269,19 @@ model Campaign {
 }
 
 model CampaignRule {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   contentType    String
   frequency      String
   customDays     String[]
-  timesPerDay    Int      @default(1)
-  firstSendTime  String   @default("16:00")
+  timesPerDay    Int       @default(1)
+  firstSendTime  String    @default("16:00")
   secondSendTime String?
-  audience       String   @default("all")
+  audience       String    @default("all")
   flyerKey       String?
   aiPromptHint   String?
+
+  lastFirstSentAt  DateTime?
+  lastSecondSentAt DateTime?
 
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)

@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "rmq": {
+      "type": "library",
+      "root": "libs/rmq",
+      "entryFile": "index",
+      "sourceRoot": "libs/rmq/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/rmq/tsconfig.lib.json"
+      }
+    }
+  },
+  "compilerOptions": {
+    "webpack": true
+  }
+}
