@@ -5,7 +5,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
     constructor () {
-        const dbUrl = process.env.BUSINESS_DATABASE_URL;
+        const dbUrl = process.env.MUKANDA_BUSINESS_DATABASE_URL;
         const adapter = new PrismaPg ({connectionString: dbUrl});
         super({ adapter })
     }

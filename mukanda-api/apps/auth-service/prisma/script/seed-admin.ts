@@ -7,7 +7,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 import * as readline from 'readline';
 
-const dbUrl = process.env.AUTH_DATABASE_URL;
+const dbUrl = process.env.MUKANDA_AUTH_DATABASE_URL;
 const adapter = new PrismaPg({ connectionString: dbUrl });
 const prisma = new PrismaClient({ adapter });
 

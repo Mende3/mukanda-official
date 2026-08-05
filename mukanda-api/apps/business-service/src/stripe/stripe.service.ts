@@ -19,29 +19,23 @@ export class StripeService {
     private readonly PLAN_ENABLED_AGENTS: Record<string, AgentType[]> = {
         FREE: [
           AgentType.CONVERSATION,
-          AgentType.ORDER_MANAGER,
         ],
         BASIC: [
           AgentType.CONVERSATION,
-          AgentType.SUGGESTIONS,
           AgentType.ORDER_MANAGER,
         ],
         PRO: [
           AgentType.CONVERSATION,
-          AgentType.SUGGESTIONS,
           AgentType.ORDER_MANAGER,
+          AgentType.SUGGESTIONS,
           AgentType.MARKETING,
-          AgentType.FEEDBACK_SURVEY,
         ],
         BUSINESS: [
           AgentType.CONVERSATION,
-          AgentType.SUGGESTIONS,
           AgentType.ORDER_MANAGER,
+          AgentType.SUGGESTIONS,
           AgentType.MARKETING,
-          AgentType.FEEDBACK_SURVEY,
-          AgentType.LOYALTY,
           AgentType.REENGAGEMENT,
-          AgentType.LEAD_QUALIFIER,
         ],
       };
 

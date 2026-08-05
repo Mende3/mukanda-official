@@ -1,5 +1,27 @@
 services:
 
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+      api-gateway:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      business-service:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - nginx-certs:/etc/nginx/certs
+    networks:
+      - mukanda-network
+
   postgres:
     build:
       context: ./postgres
@@ -157,58 +179,65 @@ services:
     networks:
       - mukanda-network
     
+  api-gateway:
+    build:
+      context: ./mukanda-api
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: api-gateway
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - auth-service
+      - business-service
+      - redis
+    networks:
+      -  mukanda-network
+
+  auth-service:
+    build: 
+      context: ./mukanda-api
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: auth-service
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      -  mukanda-network
+
+  business-service:
+    build:
+      context: ./mukanda-api
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: business-service
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      -  mukanda-network
+
 configs:
   rabbitmq-plugins:
     content: "[rabbitmq_management]."
 
-
-  # api-gateway:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     args:
-  #       APP_NAME: api-gateway
-  #   restart: unless-stopped
-  #   env_file: .env
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - auth-service
-  #     - business-service
-  #     - redis
-  #   networks:
-  #     -  mukanda-network
-
-  # auth-service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     args:
-  #       APP_NAME: auth-service
-  #   restart: unless-stopped
-  #   env_file: .env
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #   networks:
-  #     -  mukanda-network
-
-  # business-service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     args:
-  #       APP_NAME: business-service
-  #   restart: unless-stopped
-  #   env_file: .env
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #     # - rabbitmq
-  #   networks:
-  #     -  mukanda-network
-
 volumes:
+
+  nginx-certs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/ngnix/certs
+
   postgres_data:
     name: postgres_data
     driver: local

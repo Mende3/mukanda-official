@@ -17,6 +17,11 @@ async function bootstrap() {
     transform: true,
   }));
 
+  app.enableCors({
+    origin: [process.env.FRONTEND].filter(Boolean),
+    credentials: true,
+  })
+
   const config = new DocumentBuilder()
     .setTitle('Mukanda SaaS api')
     .setDescription('Api da Mukanda')
@@ -25,8 +30,8 @@ async function bootstrap() {
     .build();
 
   const documentFactorry = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactorry, {
-    jsonDocumentUrl: 'swagger/json'
+  SwaggerModule.setup('doc-api', app, documentFactorry, {
+    jsonDocumentUrl: 'doc-api/json'
   });
 
   await app.listen(process.env.PORT ?? 3000);

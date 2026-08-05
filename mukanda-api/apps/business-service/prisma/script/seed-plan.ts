@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 import { PrismaClient, PlanType, QuotaPeriod } from '../../generated/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-const dbUrl = process.env.BUSINESS_DATABASE_URL;
+const dbUrl = process.env.MUKANDA_BUSINESS_DATABASE_URL;
 const adapter = new PrismaPg({ connectionString: dbUrl });
 const prisma = new PrismaClient({ adapter });
 

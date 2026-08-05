@@ -28,38 +28,32 @@ export class BusinessService {
 
   private readonly PLAN_ENABLED_AGENTS: Record<string, AgentType[]> = {
     FREE: [
-      AgentType.CONVERSATION,
-      AgentType.ORDER_MANAGER,
+      AgentType.CONVERSATION
     ],
     BASIC: [
       AgentType.CONVERSATION,
-      AgentType.SUGGESTIONS,
       AgentType.ORDER_MANAGER,
     ],
     PRO: [
       AgentType.CONVERSATION,
-      AgentType.SUGGESTIONS,
       AgentType.ORDER_MANAGER,
+      AgentType.SUGGESTIONS,
       AgentType.MARKETING,
-      AgentType.FEEDBACK_SURVEY,
     ],
     BUSINESS: [
       AgentType.CONVERSATION,
-      AgentType.SUGGESTIONS,
       AgentType.ORDER_MANAGER,
+      AgentType.SUGGESTIONS,
       AgentType.MARKETING,
-      AgentType.FEEDBACK_SURVEY,
-      AgentType.LOYALTY,
       AgentType.REENGAGEMENT,
-      AgentType.LEAD_QUALIFIER,
     ],
   };
 
   private readonly PLAN_CUSTOM_LIMITS: Record<string, number> = {
     FREE:     0,
-    BASIC:    1,
-    PRO:      2,
-    BUSINESS: 3,
+    BASIC:    2,
+    PRO:      4,
+    BUSINESS: 5,
   };
 
   // ─── Helpers ─────────────────────────────────────────
@@ -115,20 +109,8 @@ export class BusinessService {
     return `És o ${agentName}, agente de marketing da ${businessName}. O teu objetivo é promover produtos e campanhas relevantes ao cliente de forma natural e persuasiva.`.trim();
   }
 
-  private buildSystemPromptLA(businessName: string, agentName: string): string {
-    return `És o ${agentName}, agente de fidelização da ${businessName}. O teu objetivo é reconhecer e recompensar clientes frequentes, promovendo a sua lealdade à marca.`.trim();
-  }
-
-  private buildSystemPromptFSA(businessName: string, agentName: string): string {
-    return `És o ${agentName}, agente de recolha de feedback da ${businessName}. O teu objetivo é recolher opiniões e avaliações dos clientes após interações ou compras.`.trim();
-  }
-
   private buildSystemPromptRA(businessName: string, agentName: string): string {
     return `És o ${agentName}, agente de reengajamento da ${businessName}. O teu objetivo é reativar clientes inactivos com mensagens personalizadas e ofertas relevantes.`.trim();
-  }
-
-  private buildSystemPromptLQA(businessName: string, agentName: string): string {
-    return `És o ${agentName}, agente de qualificação de leads da ${businessName}. O teu objetivo é identificar e qualificar potenciais clientes através de perguntas estratégicas.`.trim();
   }
 
   // ─── Agent Factory ───────────────────────────────────
@@ -139,10 +121,7 @@ export class BusinessService {
       suggestions: string;
       order: string;
       marketing: string;
-      loyalty: string;
-      feedback_survey: string;
       reengagement: string;
-      lead_qualifier: string;
     },
     plan: PlanType,
   ) {
@@ -188,24 +167,6 @@ export class BusinessService {
         pollMinInterval: 1,
       },
       {
-        type: AgentType.LOYALTY,
-        name: 'Agente de Fidelização',
-        description: 'Programa de fidelização de clientes',
-        status: false,
-        webhook: this.configService.getOrThrow('LOYALTY_WEBHOOK_URL'),
-        personality: 'friendly',
-        systemPrompt: prompts.loyalty,
-      },
-      {
-        type: AgentType.FEEDBACK_SURVEY,
-        name: 'Agente de Feedback',
-        description: 'Pesquisas de satisfação NPS pós-compra',
-        status: false,
-        webhook: this.configService.getOrThrow('FEEDBACK_WEBHOOK_URL'),
-        personality: 'professional',
-        systemPrompt: prompts.feedback_survey,
-      },
-      {
         type: AgentType.REENGAGEMENT,
         name: 'Agente de Reengagement',
         description: 'Reativação de clientes inativos',
@@ -213,15 +174,6 @@ export class BusinessService {
         webhook: this.configService.getOrThrow('REENGAGEMENT_WEBHOOK_URL'),
         personality: 'friendly',
         systemPrompt: prompts.reengagement,
-      },
-      {
-        type: AgentType.LEAD_QUALIFIER,
-        name: 'Qualificador de Leads',
-        description: 'Qualificação de novos contactos via conversa',
-        status: false,
-        webhook: this.configService.getOrThrow('LEAD_QUALIFIER_WEBHOOK_URL'),
-        personality: 'professional',
-        systemPrompt: prompts.lead_qualifier,
       },
     ];
 
@@ -352,10 +304,7 @@ export class BusinessService {
       suggestions:     this.buildSystemPromptSA(name, 'Kulombola'),
       order:           this.buildSystemPromptOA(name, 'Gestor de Encomendas'),
       marketing:       this.buildSystemPromptMA(name, 'Promotor'),
-      loyalty:         this.buildSystemPromptLA(name, 'Fidelizador'),
-      feedback_survey: this.buildSystemPromptFSA(name, 'Avaliador'),
       reengagement:    this.buildSystemPromptRA(name, 'Reativador'),
-      lead_qualifier:  this.buildSystemPromptLQA(name, 'Qualificador'),
     };
     const agents = this.buildAgents(prompts, PlanType.FREE);
     

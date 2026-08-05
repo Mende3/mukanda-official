@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { ResendService } from '@app/resend';
 import { JwtService } from '@nestjs/jwt'
-import { User } from '@prisma/client';
 import { MyRedisService } from '@app/redis';
 import { LoginUserDto } from '../dto/login.user.dto';
 import { RegisterUserDto } from '../dto/registerUser.dto';
@@ -28,7 +27,7 @@ export class AuthService {
   //
 
   // *************** Utils *********************
-  async findUserById (userId: string): Promise<User>{
+  async findUserById (userId: string) {
 
     const cached = await this.myRedisService.sessionGet (this.genUserKey(userId));
     if (cached) return JSON.parse(cached); 
@@ -45,7 +44,7 @@ export class AuthService {
     return user;
   }
 
-  async findUserByEmail (userEmail: string): Promise<User>{
+  async findUserByEmail (userEmail: string) {
 
     const user = await this.prismaService.user.findUnique ({
       where: {email: userEmail}

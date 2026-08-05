@@ -13,6 +13,7 @@ all: setup up
 
 setup:
 	@echo "$(YELLOW)Criando diretórios de dados...$(NC)"
+	@mkdir -p $(DATA_PATH)/nginx
 	@mkdir -p $(DATA_PATH)/postgres
 	@mkdir -p $(DATA_PATH)/redis
 	@mkdir -p $(DATA_PATH)/n8n

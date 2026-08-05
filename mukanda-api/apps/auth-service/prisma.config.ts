@@ -11,6 +11,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["AUTH_DATABASE_URL"],
+    url: process.env["MUKANDA_AUTH_DATABASE_URL"],
   },
 });
