@@ -194,6 +194,11 @@ export class StripeService {
             }),
         ]);
 
+        await this.prismaService.business.update ({
+            where: {id: business.id},
+            data: {plan}
+        })
+
         await this.myRedisService.cacheDel(this.businessKey(business.ownerId));
         await this.myRedisService.cacheDel(this.subscriptionKey(business.id));
         await this.myRedisService.cacheDel(this.businessSubKey(business.ownerId));

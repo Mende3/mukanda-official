@@ -35,9 +35,13 @@ export interface EvoGoPairCode {
     PairingCode: string
 }
 
-export interface EvoGoQrCode {
-    Qrcode: string
+export interface EvoGoQrPairCode {
+    qrcode: string
     Code: string
+}
+
+export interface EvoGoQrCode {
+    qrcode: string
 }
 
 export interface EvoGoResponse<T> {
@@ -47,4 +51,10 @@ export interface EvoGoResponse<T> {
 
 export interface evoGoError {
     error: string
+}
+
+export interface EvoGoInstanceStatus {
+    Connected: boolean,
+    Logged: boolean,
+    Name: string
 }

@@ -32,12 +32,25 @@ export class BusinessController {
     return this.businessService.get(body);
   }
 
-
   @MessagePattern('business-instance-connect')
   async instanceConnect(@Payload() body: { user: any}) {
     return this.businessService.instanceConnect(body);
   }
 
+  @MessagePattern('business-instance-onlypaircode')
+  async getOnlyPirCode(@Payload() body: { user: any}) {
+    return this.businessService.getOnlyPairCode(body);
+  }
+
+  @MessagePattern('business-instance-onlyqrcode')
+  async getOnlyQrCode(@Payload() body: {user: any}) {
+    return this.businessService.getOnlyQrCode(body);
+  }
+
+  @MessagePattern('business-instance-status')
+  async instanceStatus(@Payload() body: { user: any}) {
+    return this.businessService.instanceStatus(body);
+  }
 
   @MessagePattern('business-get-qr-codepair')
   async getQrAndCodePair(@Payload() body: { user: any }) {

@@ -15,6 +15,7 @@ import { UpdateCustomAgentDto} from '../../utils/dto/business/update-agent.dto';
 import { CreateCustomAgentDto } from '../../utils/dto/business/create-custom-agent.dto';
 import { InstanceConnectDto } from '../../utils/dto/business/instance-connect.dto';
 
+
 @Controller('business')
 export class BusinessController {
     constructor(
@@ -32,8 +33,16 @@ export class BusinessController {
     ) {
         return firstValueFrom(
             this.businessClient
-                .send('business-create', {user: req.user, name: body.name, description: body.description, phone: body.phone})
-                .pipe(handlerRcpError),
+                .send('business-create', {
+                    user: req.user,
+                    name: body.name,
+                    description: body.description,
+                    phone: body.phone,
+                    state: body.state,
+                    city: body.city,
+                    postal_code: body.postal_code
+                })
+                // .pipe(handlerRcpError),
         );
     }
 
@@ -49,6 +58,49 @@ export class BusinessController {
             this.businessClient
                 .send('business-instance-connect', {user: req.user})
                 .pipe(handlerRcpError),
+        );
+    }
+
+
+    @ApiOperation({ summary: 'pegar o estado da instancia do evoGo'})
+    @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
+    @Roles(Role.User)
+    @Get('instance-status')
+    async instanceStatus(
+        @Req() req,
+    ) {
+        return firstValueFrom(
+            this.businessClient
+                .send('business-instance-status', {user: req.user})
+                .pipe(handlerRcpError)
+        );
+    }
+
+    @ApiOperation({ summary: 'pegar o codigo de verificação'})
+    @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
+    @Roles(Role.User)
+    @Get('instance-onlyqrcode')
+    async getOnlyQrCode(
+        @Req() req,
+    ) {
+        return firstValueFrom(
+            this.businessClient
+                .send('business-instance-onlyqrcode', {user: req.user})
+                .pipe(handlerRcpError)
+        );
+    }
+
+    @ApiOperation({ summary: 'pegar o codigo de verificação'})
+    @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
+    @Roles(Role.User)
+    @Get('instance-onlypaircode')
+    async getOnlyPairCode(
+        @Req() req,
+    ) {
+        return firstValueFrom(
+            this.businessClient
+                .send('business-instance-onlypaircode', {user: req.user})
+                .pipe(handlerRcpError)
         );
     }
 

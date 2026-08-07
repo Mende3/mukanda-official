@@ -66,7 +66,7 @@ export class BusinessService {
     if (cached) return JSON.parse(cached);
 
     const business = await this.prismaService.business.findUnique({
-      where: { ownerId },
+      where: { ownerId }
     });
 
     if (!business) throw new RpcException({
@@ -261,6 +261,7 @@ export class BusinessService {
       postal_code,
     } = body;
 
+    
     const existing = await this.prismaService.business.findUnique({
       where: { ownerId: userId },
     });
@@ -270,7 +271,9 @@ export class BusinessService {
       message: 'O seu negócio já foi criado',
     });
 
+
     const instance = await this.evogoService.createInstance (phone);
+
     const { id, token } = instance.data;
 
     const freePlan = await this.prismaService.plan.findUnique({
@@ -609,6 +612,39 @@ export class BusinessService {
     return { message: instance.message };
   }
 
+  async getOnlyPairCode(body: { user: any }) {
+    const { userId } = body.user;
+    const business = await this.findBusinessByOwnerId(userId);
+
+    const instance = await this.evogoService.getPairCode(
+      business.phone,
+      business.whatsappInstanceToken,
+    );
+
+    return { message: instance.data.PairingCode };
+  }
+
+  async getOnlyQrCode (body: {user: any}) {
+    const { userId } = body.user;
+    const business = await this.findBusinessByOwnerId(userId);
+
+    const instance = await this.evogoService.getQrPairCode (business.whatsappInstanceToken);
+
+    console.log (instance.data.qrcode)
+    console.log (instance)
+
+    return { message: instance.data.qrcode }
+  }
+
+  async instanceStatus (body: {user: any}) {
+    const { userId } = body.user;
+    const business = await this.findBusinessByOwnerId(userId);
+
+    const instance = await this.evogoService.instanceStatus (business.whatsappInstanceToken);
+
+    return instance;
+  }
+
   async getQrAndCodePair (body: {user: any}) {
     const { userId } = body.user;
     const business = await this.findBusinessByOwnerId (userId);
@@ -620,7 +656,7 @@ export class BusinessService {
       });
     }
 
-    const getInstanceQrCode = await this.evogoService.getQrCode (
+    const getInstanceQrCode = await this.evogoService.getQrPairCode (
       business.whatsappInstanceToken
     );
 
@@ -630,7 +666,7 @@ export class BusinessService {
     )
 
     return {
-      QrCode: getInstanceQrCode.data.Qrcode,
+      QrCode: getInstanceQrCode.data.qrcode,
       PairCode: getInstancePairCode.data.PairingCode
     };
   }

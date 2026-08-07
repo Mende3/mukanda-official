@@ -8,7 +8,9 @@ import {
     EvoGoInstance,
     EvoGoQrCode,
     EvoGoResponse,
-    EvoGoPairCode
+    EvoGoPairCode,
+    EvoGoInstanceStatus,
+    EvoGoQrPairCode
 } from './utils/interfaces';
 import { handleError } from './utils/handleError';
 import { subscribe } from 'diagnostics_channel';
@@ -60,7 +62,6 @@ export class EvogoService implements OnModuleInit {
             {
                 name: instancePhone,
                 token: tokenInstance
-                
             },
             {
                 headers: {
@@ -102,9 +103,9 @@ export class EvogoService implements OnModuleInit {
         return data;
     }
 
-    async getQrCode (instanceToken: string) {
+    async getQrPairCode (instanceToken: string) {
         const { data } = await firstValueFrom(
-                this.httpService.get<EvoGoResponse<EvoGoQrCode>>(
+                this.httpService.get<EvoGoResponse<EvoGoQrPairCode>>(
                 `${this.apiUrl}/instance/qr`,
                 {
                     headers: {
@@ -132,7 +133,24 @@ export class EvogoService implements OnModuleInit {
                 'Content-Type': 'application/json',
                 },
             },
-            ).pipe(catchError(handleError))
+            )
+        );
+
+        return data;
+    }
+
+    async instanceStatus (instanceToken: string) {
+
+        const { data } = await firstValueFrom(
+            this.httpService.get<EvoGoResponse<EvoGoInstanceStatus>>(
+            `${this.apiUrl}/instance/status`,
+            {
+                headers: {
+                'apikey': instanceToken,
+                'Content-Type': 'application/json',
+                },
+            },             
+            )
         );
 
         return data;

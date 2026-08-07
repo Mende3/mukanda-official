@@ -24,7 +24,7 @@ export class UserController {
     ) {}
 
     @ApiOperation({ summary: 'pegar o utlizador (userId e role)' })
-    @UseGuards (AuthGuard, RolesGuard, EmailVerifiedGuard)
+    @UseGuards (AuthGuard, RolesGuard)
     @SkipThrottle()
     @Roles(Role.User, Role.Admin)
     @Get("me")

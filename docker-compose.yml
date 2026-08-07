@@ -1,26 +1,26 @@
 services:
 
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    image: nginx
-    container_name: nginx
-    restart: unless-stopped
-    depends_on:
-      api-gateway:
-        condition: service_started
-      auth-service:
-        condition: service_started
-      business-service:
-        condition: service_started
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - nginx-certs:/etc/nginx/certs
-    networks:
-      - mukanda-network
+  # nginx:
+  #   build:
+  #     context: ./nginx
+  #     dockerfile: Dockerfile
+  #   image: nginx
+  #   container_name: nginx
+  #   restart: unless-stopped
+  #   depends_on:
+  #     api-gateway:
+  #       condition: service_started
+  #     auth-service:
+  #       condition: service_started
+  #     business-service:
+  #       condition: service_started
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - nginx-certs:/etc/nginx/certs
+  #   networks:
+  #     - mukanda-network
 
   postgres:
     build:
@@ -37,7 +37,12 @@ services:
       - postgres_data:/var/lib/postgresql
     networks:
       -  mukanda-network
-  
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   redis:
     build:
       context: ./redis
@@ -55,6 +60,11 @@ services:
       - redis_data:/data
     networks:
       -  mukanda-network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -p ${REDIS_PORT:-6379} --user ${REDIS_USER} --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   n8n:
     image: docker.n8n.io/n8nio/n8n
@@ -94,18 +104,21 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
     depends_on:
-      - postgres
-      - redis
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       -  mukanda-network
     
   evolution-go:
     image: evoapicloud/evolution-go:latest
     container_name: evolution-go
-    restart: unless-stopped
     ports:
       - "8080:8080"
+    restart: unless-stopped
     environment:
       - SERVER_URL=http://evolution-go:8080
       - GLOBAL_API_KEY=${EVOGO_GLOBAL_API_KEY}
@@ -154,89 +167,101 @@ services:
     volumes:
       - evogo_data:/evolution/instances
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       -  mukanda-network
 
   rabbitmq:
-    image: rabbitmq:latest
+    build:
+      context: ./rabbitmq
+      dockerfile: Dockerfile
     container_name: rabbitmq
+    image: rabbitmq
     restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - RABBITMQ_MANAGEMENT_AGENT_DISABLE_METRICS_COLLECTOR=false
-    configs:
-      - source: rabbitmq-plugins
-        target: /etc/rabbitmq/enabled_plugins
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_MUKANDA_VHOST: ${RABBITMQ_MUKANDA_VHOST}
+      RABBITMQ_MANAGEMENT_AGENT_DISABLE_METRICS_COLLECTOR: "false"
     volumes:
       - rabbitmq_lib_data:/var/lib/rabbitmq
       - rabbitmq_log_data:/var/log/rabbitmq
     networks:
       - mukanda-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
     
-  api-gateway:
-    build:
-      context: ./mukanda-api
-      dockerfile: Dockerfile
-      args:
-        APP_NAME: api-gateway
-    restart: unless-stopped
-    env_file: .env
-    ports:
-      - "127.0.0.1:3000:3000"
-    depends_on:
-      - auth-service
-      - business-service
-      - redis
-    networks:
-      -  mukanda-network
+  # api-gateway:
+  #   build:
+  #     context: ./mukanda-api
+  #     dockerfile: Dockerfile
+  #     args:
+  #       APP_NAME: api-gateway
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   depends_on:
+  #     auth-service:
+  #       condition: service_started
+  #     business-service:
+  #       condition: service_started
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     -  mukanda-network
 
-  auth-service:
-    build: 
-      context: ./mukanda-api
-      dockerfile: Dockerfile
-      args:
-        APP_NAME: auth-service
-    restart: unless-stopped
-    env_file: .env
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      -  mukanda-network
+  # auth-service:
+  #   build: 
+  #     context: ./mukanda-api
+  #     dockerfile: Dockerfile
+  #     args:
+  #       APP_NAME: auth-service
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     -  mukanda-network
 
-  business-service:
-    build:
-      context: ./mukanda-api
-      dockerfile: Dockerfile
-      args:
-        APP_NAME: business-service
-    restart: unless-stopped
-    env_file: .env
-    depends_on:
-      - postgres
-      - redis
-      - rabbitmq
-    networks:
-      -  mukanda-network
+  # business-service:
+  #   build:
+  #     context: ./mukanda-api
+  #     dockerfile: Dockerfile
+  #     args:
+  #       APP_NAME: business-service
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   networks:
+  #     -  mukanda-network
 
-configs:
-  rabbitmq-plugins:
-    content: "[rabbitmq_management]."
 
 volumes:
 
-  nginx-certs:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/${USER}/data/ngnix/certs
+  # nginx-certs:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /home/${USER}/data/mukanda_saas/nginx/certs
 
   postgres_data:
     name: postgres_data

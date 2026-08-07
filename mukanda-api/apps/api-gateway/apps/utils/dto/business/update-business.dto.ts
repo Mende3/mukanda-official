@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { PlanType } from '@prisma/client';
 import { IsEnum, IsString } from 'class-validator'
 
 export class UpdateBusinessInfoDto {

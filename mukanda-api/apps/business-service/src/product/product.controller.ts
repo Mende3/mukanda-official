@@ -68,7 +68,7 @@ export class ProductController {
 
   @MessagePattern('product-low-stock')
   async getLowStock(@Payload() body: {user: any}) {
-    return this.productService.getLowStock(body.user)
+    return this.productService.getLowStock(body)
   }
 
   @MessagePattern('product-update-stock')

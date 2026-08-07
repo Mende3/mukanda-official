@@ -49,11 +49,6 @@ import { MyRedisModule } from '@app/redis';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ([
         {
-          name: 'global',
-          ttl: 60000,   // 1 minuto
-          limit: 100,   // 100 requests por minuto para tudo
-        },
-        {
           name: 'auth',
           ttl: 60000,
           limit: 10,    // 10 requests por minuto só para auth

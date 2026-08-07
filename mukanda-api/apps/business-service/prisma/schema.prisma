@@ -90,6 +90,7 @@ model Business {
   instanceActive     Boolean @default(false)
   isActive           Boolean  @default(false)
   ownerId            String   @unique
+  plan               PlanType @default(FREE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

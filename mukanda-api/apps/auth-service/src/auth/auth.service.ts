@@ -226,7 +226,11 @@ export class AuthService {
     }
     
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    await this.myRedisService.cacheSet(`verificationCode:${user.email}`, verificationCode, 900);
+    await this.myRedisService.cacheSet(
+      this.genVerifyCodeKey(user.email),
+      verificationCode,
+      900
+    );
 
     await this.resendService.sendEmail(
       user.email,
@@ -294,6 +298,8 @@ export class AuthService {
   async verifyCode (body:  {userId: string, code: string}) {
     const user = await this.findUserById (body.userId);
 
+    console.log ('dentro do obs', body.code);
+
     if (user.isVerified) {
       throw new RpcException({
           statusCode: HttpStatus.CONFLICT,
@@ -305,12 +311,13 @@ export class AuthService {
     const key = this.genVerifyCodeKey(user.email);
 
     const codeCached = await this.myRedisService.cacheGet(key);
+    console.log ('qui ', codeCached, key);
+
     if (!codeCached) throw new RpcException ({
       statusCode: HttpStatus.NOT_FOUND,
       message: "Codigo expirado"
     });
     const code = body.code;
-
     if (code !== codeCached) throw new RpcException ({
       statusCode: HttpStatus.NOT_FOUND,
       message: "Insira o código válido"
