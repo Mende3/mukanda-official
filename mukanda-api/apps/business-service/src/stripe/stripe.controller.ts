@@ -11,16 +11,6 @@ export class StripeController {
         private readonly stripeService: StripeService,
     ) {}
 
-    @MessagePattern ('billing-plans-list')
-    async getPlans () {
-        return this.stripeService.getPlans ();
-    }
-
-    @MessagePattern ('billing-subscription-get')
-    async getSubscription(@Payload() body: {user: any} ) {
-        return this.stripeService.getSubscription (body);
-    }
-
     @MessagePattern ('billing-checkout-create')
     async createCheckout(@Payload() body:{user: any, plan: PlanType, successUrl?: string, cancelUrl?: string}) {
         return this.stripeService.createCheckout (body);

@@ -70,58 +70,6 @@ export class StripeService {
         return business;
     }
 
-    async getPlans () {
-        const cacheKey = this.plansListKey();
-        const cache = await this.myRedisService.cacheGet (cacheKey);
-        if (cache) return JSON.parse (cache);
-
-        const plans = await this.prismaService.plan.findMany({
-            where: {active: true},
-            orderBy: {amountCents: 'asc'}
-        });
-
-        await this.myRedisService.cacheSet (
-            cacheKey,
-            JSON.stringify(plans),
-            1800
-        );
-
-        return plans;
-    }
-
-    async getSubscription(body: {user: any}) {
-        const { userId } = body.user;
-        const cacheKey = this.businessSubKey(userId);
-
-        let business;
-
-        const cache = await this.myRedisService.cacheGet (cacheKey);
-        if (cache) {
-            business = JSON.parse(cache);
-        }
-        else {
-            business = await this.prismaService.business.findUnique({
-                where: { ownerId: userId },
-                include: { subscription: { include: { plan: true, scheduledPlan: true } } },
-            });
-        }
-
-        if (!business?.subscription) {
-            throw new RpcException({
-                statusCode: HttpStatus.NOT_FOUND,
-                message: 'Assinatura não encontrada',
-            });
-        }
-
-        await this.myRedisService.cacheSet (
-            cacheKey,
-            JSON.stringify(business),
-            1800
-        );
-
-        return business.subscription;
-    }
-
     async createCheckout(body:{user: any, plan: PlanType, successUrl?: string, cancelUrl?: string}) {
         const { userId } = body.user;
         const cacheKey = this.businessSubKey(userId);

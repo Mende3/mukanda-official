@@ -20,6 +20,7 @@ import { StripeController } from '../apps/business/stripe/stripe.controller';
 import { QuotaService } from '../apps/business/internal/quota/quota.service';
 import { RateLimitService } from '../apps/business/internal/quota/rate.limit.service';
 import { MyRedisModule } from '@app/redis';
+import { SubPlanController } from '../apps/business/sub-plan/sub-plan.controller';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { MyRedisModule } from '@app/redis';
     AdminController,
     UserController,
     BusinessController,
+    SubPlanController,
     StripeController,
     AvailabilityController,
     OrderController,

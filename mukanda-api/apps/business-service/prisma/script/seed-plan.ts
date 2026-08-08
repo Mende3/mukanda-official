@@ -16,7 +16,7 @@ async function seedPlans() {
    const plans = [
     {
       type: PlanType.FREE,
-      name: 'Grátis',
+      name: 'Free',
       description: 'Para experimentar o Mukanda',
       stripePriceId: null,
       amountCents: 0,
@@ -25,14 +25,14 @@ async function seedPlans() {
       quotaPeriod: QuotaPeriod.DAILY,
       rateBurstTokens: 3,
       rateRefillPerSec: 3 / 3600, // 3 msgs/hora de rajada — bem restrito
-      agentSlots: 2,
+      agentSlots: 1,
     },
     {
       type: PlanType.BASIC,
-      name: 'Básico',
+      name: 'Basic',
       description: 'Para negócios em crescimento',
       stripePriceId: 'price_1TxwtTBN6jfCePZi1jdrybGP',
-      amountCents: 449999,
+      amountCents: 399999,
       currency: 'aoa',
       aiMessageLimit: 55,
       quotaPeriod: QuotaPeriod.DAILY,

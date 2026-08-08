@@ -16,25 +16,6 @@ export class StripeController {
         @Inject('BUSINESS-SERVICE') private readonly businessClient: ClientProxy
     ) {}
 
-    @ApiOperation({ summary: 'listar planos disponíveis' })
-    @Get('plans')
-    async getPlans() {
-        return firstValueFrom (
-            this.businessClient.send('billing-plans-list', {})
-            .pipe (handlerRcpError)
-        );
-    }
-
-    @ApiOperation({ summary: 'obter assinatura atual do negócio' })
-    @Get('subscription')
-    async getSubscription(@Req() req) {
-        return firstValueFrom(
-            this.businessClient
-                .send('billing-subscription-get', { user: req.user })
-                .pipe(handlerRcpError),
-        );
-    }
-
     @ApiOperation({ summary: 'iniciar upgrade de plano' })
     @ApiBody({ type: CreateCheckoutSessionDto })
     @Post('checkout')

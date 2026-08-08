@@ -12,6 +12,8 @@ import { AdminModule } from './admin/admin.module';
 import { StripeModule } from './stripe/stripe.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { QuoteAndRateModule } from './quote-and-rate/quote-and-rate.module';
+import { SubPlanController } from './sub-plan/sub-plan.controller';
+import { SubPlanModule } from './sub-plan/sub-plan.module';
 
 @Module({
   imports: [
@@ -26,7 +28,8 @@ import { QuoteAndRateModule } from './quote-and-rate/quote-and-rate.module';
     AdminModule,
     StripeModule,
     ScheduleModule.forRoot(),
-    QuoteAndRateModule
+    QuoteAndRateModule,
+    SubPlanModule
   ],
   controllers: [],
   providers: [],
