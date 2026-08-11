@@ -21,18 +21,23 @@ import { QuotaService } from '../apps/business/internal/quota/quota.service';
 import { RateLimitService } from '../apps/business/internal/quota/rate.limit.service';
 import { MyRedisModule } from '@app/redis';
 import { SubPlanController } from '../apps/business/sub-plan/sub-plan.controller';
+import { WebhookStripeController } from '../apps/business/webhook_stripe/webhook_stripe.controller';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PrometheusModule.register({
+      path: "mukanda-metrics"
+    }),
     ClientsModule.register([
      {
         name: "AUTH-SERVICE",
         transport: Transport.TCP,
         options: {
-          host: '127.0.0.1',
+          host: 'auth-service',
           port: 3001,
         },
       },
@@ -40,7 +45,7 @@ import { SubPlanController } from '../apps/business/sub-plan/sub-plan.controller
         name: "BUSINESS-SERVICE",
         transport: Transport.TCP,
         options: {
-          host: '127.0.0.1',
+          host: 'business-service',
           port: 3002,
         },
       },
@@ -71,6 +76,7 @@ import { SubPlanController } from '../apps/business/sub-plan/sub-plan.controller
     BusinessController,
     SubPlanController,
     StripeController,
+    WebhookStripeController,
     AvailabilityController,
     OrderController,
     UploadController,

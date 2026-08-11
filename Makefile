@@ -21,6 +21,8 @@ setup:
 	@mkdir -p $(DATA_PATH)/evogo
 	@mkdir -p $(DATA_PATH)/rabbitmq/rabbitmq_lib
 	@mkdir -p $(DATA_PATH)/rabbitmq/rabbitmq_log
+	@mkdir -p $(DATA_PATH)/prometheus
+	@mkdir -p $(DATA_PATH)/grafana
 	@echo "$(GREEN)Diretórios criados com sucesso!$(NC)"
 up:
 	@echo "$(YELLOW)Iniciando containers...$(NC)"

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Plan" ADD COLUMN     "agentsCustom" INTEGER NOT NULL DEFAULT 0,
+ALTER COLUMN "agentSlots" SET DEFAULT 1;

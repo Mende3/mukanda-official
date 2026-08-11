@@ -48,7 +48,7 @@ export class CampaignService {
   }
 
   private withFlyerUrls<T extends { rules?: any[] }>(campaign: T): T {
-      if (!campaign.rules?.length) return campaign
+    if (!campaign.rules?.length) return campaign
 
     return {
       ...campaign,
@@ -328,9 +328,9 @@ export class CampaignService {
     return { message: 'Campanha removida com sucesso' };
   }
 
-  async uploadCampaignImage(campaignId: string, key: string | null, userId: string) {
+  async uploadCampaignImage(ruleId: string, key: string | null, userId: string) {
     const campaignRule = await this.prismaService.campaignRule.findFirst({
-        where: { campaignId: campaignId }
+        where: { id: ruleId }
     })
 
     if (!campaignRule) throw new RpcException({ statusCode: 404, message: 'Regra de campanhã não encontrada' })
@@ -341,7 +341,7 @@ export class CampaignService {
     });
 
     await this.myRedisService.cacheDel(this.campaignListKey(userId));
-    await this.myRedisService.cacheDel(this.campaignKey(userId, campaignId));
+    await this.myRedisService.cacheDel(this.campaignKey(userId, ruleId));
 
     return updated;
   }

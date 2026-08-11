@@ -56,15 +56,15 @@ export class CampaignController {
     return this.campaignService.remove(body);
   }
 
-  @MessagePattern('upload-product-update_image_key')
+  @MessagePattern('upload-campaign-update_image_key')
   async uploadCampaignImage (@Payload() body: {
-      campaignId: string,
+      ruleId: string,
       key: string | null,
       userId: string,
     }
   ) {
     return this.campaignService.uploadCampaignImage(
-      body.campaignId,
+      body.ruleId,
       body.key,
       body.userId
     );

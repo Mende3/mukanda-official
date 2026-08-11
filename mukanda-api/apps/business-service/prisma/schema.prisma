@@ -123,7 +123,9 @@ model Plan {
   rateBurstTokens  Int?         // capacidade máxima do bucket (rajada)
   rateRefillPerSec Float?       // tokens repostos por segundo
 
-  agentSlots      Int      @default(2)
+  agentsDefault   Int      @default(1)
+  agentsCustom    Int      @default(0)
+  agentSlots      Int      @default(1)
   active          Boolean  @default(true)
 
   subscriptions          Subscription[] @relation("CurrentPlan")

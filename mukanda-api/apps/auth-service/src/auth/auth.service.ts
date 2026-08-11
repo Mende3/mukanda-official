@@ -298,8 +298,6 @@ export class AuthService {
   async verifyCode (body:  {userId: string, code: string}) {
     const user = await this.findUserById (body.userId);
 
-    console.log ('dentro do obs', body.code);
-
     if (user.isVerified) {
       throw new RpcException({
           statusCode: HttpStatus.CONFLICT,

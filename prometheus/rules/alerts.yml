@@ -1,0 +1,149 @@
+groups:
+
+  # CONTAINERS
+
+  - name: containers
+    rules:
+
+      - alert: CriticalContainerDown
+        expr: |
+          absent(container_cpu_usage_seconds_total{name="api-gateway"}) == 1
+          or absent(container_cpu_usage_seconds_total{name="postgres"}) == 1
+          or absent(container_cpu_usage_seconds_total{name="nginx"}) == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container crítico em baixo"
+          description: "Um dos containers críticos (api-gateway, ai, postgres, nginx) está em baixo há mais de 1 minuto."
+
+      - alert: ContainerHighCPU
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{name!=""}[2m])) by (name) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU alta no container {{ $labels.name }}"
+          description: "O container {{ $labels.name }} está com CPU acima de 80% há mais de 2 minutos (valor atual: {{ $value | printf \"%.1f\" }}%)."
+
+      - alert: ContainerHighMemory
+        expr: |
+          (container_memory_rss{name!=""} / container_spec_memory_limit_bytes{name!=""}) * 100 > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memória alta no container {{ $labels.name }}"
+          description: "O container {{ $labels.name }} está a usar mais de 85% do limite de memória."
+
+      - alert: ContainerRestarting
+        expr: |
+          increase(container_start_time_seconds{name!=""}[10m]) > 2
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} em restart loop"
+          description: "O container {{ $labels.name }} reiniciou mais de 2 vezes nos últimos 10 minutos."
+
+
+  # POSTGRESQL
+
+  - name: postgres
+    rules:
+
+      - alert: PostgresDown
+        expr: |
+          absent(container_cpu_usage_seconds_total{name="postgres"}) == 1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL em baixo"
+          description: "O container postgres não está a ser detetado há mais de 30 segundos."
+
+
+  # SISTEMA / HOST (node-exporter)
+
+  - name: host
+    rules:
+
+      - alert: HostHighDiskUsage
+        expr: |
+          (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disco quase cheio no host"
+          description: "O disco {{ $labels.mountpoint }} está acima de 85% de uso (valor atual: {{ $value | printf \"%.1f\" }}%)."
+
+      - alert: HostHighMemory
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RAM do host acima de 90%"
+          description: "A memória disponível do host está abaixo de 10% (uso atual: {{ $value | printf \"%.1f\" }}%)."
+
+      - alert: HostHighLoad
+        expr: |
+          node_load5 / count(node_cpu_seconds_total{mode="idle"}) by (instance) > 1.5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Load average alto no host"
+          description: "O load average (5m) está acima de 1.5x o número de CPUs disponíveis."
+  
+  # api-gateway SERVICE (api-gateway / Node.js)
+
+  - name: api-gateway
+    rules:
+
+      - alert: api-gatewayHighErrorRate
+        expr: |
+          sum(rate(http_requests_total{job="api-gateway", status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total{job="api-gateway"}[5m])) * 100 > 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Taxa de erros alta no api-gateway"
+          description: "Mais de 10% dos requests ao api-gateway estão a retornar 5xx (valor atual: {{ $value | printf \"%.1f\" }}%)."
+
+      - alert: api-gatewayHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket{job="api-gateway"}[5m])
+          ) > 3
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latência alta no api-gateway (p95)"
+          description: "O percentil 95 de latência do api-gateway está acima de 3s (valor atual: {{ $value | printf \"%.1f\" }}s)."
+
+      - alert: api-gatewayNoRequests
+        expr: |
+          sum(rate(http_requests_total{job="api-gateway"}[5m])) == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "api-gateway sem tráfego"
+          description: "O api-gateway não está a receber requests há mais de 5 minutos — pode estar em baixo ou isolado."
+
+      - alert: api-gatewayDown
+        expr: |
+          absent(container_cpu_usage_seconds_total{name="api-gateway"}) == 1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "api-gateway em baixo"
+          description: "O container api-gateway não está a ser detetado há mais de 30 segundos."

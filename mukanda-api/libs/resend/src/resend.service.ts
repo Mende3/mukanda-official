@@ -13,7 +13,7 @@ export class ResendService {
         const resend = new Resend(this.configService.getOrThrow<string>('RESEND_API_TOKEN'));
 
         const {data, error} = await resend.emails.send({
-            from: 'mukanda <onboarding@resend.dev>',
+            from: 'mukanda <naoresponde@mukanda.ngolabyte.ao>',
             to: [to],
             subject: subject,
             html: `${html}`,

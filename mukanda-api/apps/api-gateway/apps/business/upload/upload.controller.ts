@@ -125,7 +125,7 @@ export class UploadController {
     @UseInterceptors(FileInterceptor('file', MULTER_OPTIONS))
     async uploadRuleFlyer(
         @Req() req,
-        @Param('id') campaignId: string,
+        @Param('id') ruleId: string,
         @UploadedFile() file: Express.Multer.File,
     ) {
         if (!file) throw new BadRequestException('Nenhum ficheiro enviado.')
@@ -133,15 +133,15 @@ export class UploadController {
         const { email, userId } = req.user
 
         // 1. Upload para R2 (gateway faz isto directamente)
-        const key = await this.uploadService.uploadRuleFlyer(file, email, campaignId)
+        const key = await this.uploadService.uploadRuleFlyer(file, email, ruleId)
         const signedUrl = await this.uploadService.getSignedUrl(key)
 
         // 2. Persiste a key no business-service via TCP
         await firstValueFrom(
-            this.businessClient.send('upload-campaign-update_image_key', { campaignId, key, userId })
+            this.businessClient.send('upload-campaign-update_image_key', { ruleId, key, userId })
         )
 
-        return { key, signedUrl, campaignId, size: file.size, mimetype: file.mimetype }
+        return { key, signedUrl, ruleId, size: file.size, mimetype: file.mimetype }
     }
 
     @Delete('campaign/:id/image')
@@ -154,7 +154,7 @@ export class UploadController {
 
         // 3. Limpa a key no business-service
         await firstValueFrom(
-            this.businessClient.send('upload-product-update_image_key', { productId, key: null, userId })
+            this.businessClient.send('upload-campaign-update_image_key', { productId, key: null, userId })
         )
 
         return { message: 'Imagem eliminada com sucesso', productId }

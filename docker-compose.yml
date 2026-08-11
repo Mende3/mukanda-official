@@ -1,27 +1,29 @@
 services:
 
-  # nginx:
-  #   build:
-  #     context: ./nginx
-  #     dockerfile: Dockerfile
-  #   image: nginx
-  #   container_name: nginx
-  #   restart: unless-stopped
-  #   depends_on:
-  #     api-gateway:
-  #       condition: service_started
-  #     auth-service:
-  #       condition: service_started
-  #     business-service:
-  #       condition: service_started
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - nginx-certs:/etc/nginx/certs
-  #   networks:
-  #     - mukanda-network
+#REVERSE PROXY
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+      api-gateway:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      business-service:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+    networks:
+      - mukanda-network
 
+#DATABASE
   postgres:
     build:
       context: ./postgres
@@ -43,6 +45,7 @@ services:
       timeout: 5s
       retries: 5
 
+#MEMORY CACHE
   redis:
     build:
       context: ./redis
@@ -54,8 +57,6 @@ services:
       REDIS_PORT: ${REDIS_PORT}
       REDIS_USER: ${REDIS_USER}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-    ports:
-      - "6380:6380"
     volumes:
       - redis_data:/data
     networks:
@@ -66,6 +67,7 @@ services:
       timeout: 5s
       retries: 5
 
+#AUTOMAITON AND IA
   n8n:
     image: docker.n8n.io/n8nio/n8n
     container_name: n8n
@@ -113,6 +115,7 @@ services:
     networks:
       -  mukanda-network
     
+#WHATSAPP API
   evolution-go:
     image: evoapicloud/evolution-go:latest
     container_name: evolution-go
@@ -174,6 +177,7 @@ services:
     networks:
       -  mukanda-network
 
+#MESSAGE QUEUE
   rabbitmq:
     build:
       context: ./rabbitmq
@@ -201,57 +205,130 @@ services:
       retries: 5
       start_period: 20s
     
-  # api-gateway:
-  #   build:
-  #     context: ./mukanda-api
-  #     dockerfile: Dockerfile
-  #     args:
-  #       APP_NAME: api-gateway
-  #   restart: unless-stopped
-  #   env_file: .env
-  #   depends_on:
-  #     auth-service:
-  #       condition: service_started
-  #     business-service:
-  #       condition: service_started
-  #     redis:
-  #       condition: service_healthy
-  #   networks:
-  #     -  mukanda-network
+#BACKEND
+  api-gateway:
+    build:
+      context: ./mukanda-api
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      auth-service:
+        condition: service_started
+      business-service:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      -  mukanda-network
 
-  # auth-service:
-  #   build: 
-  #     context: ./mukanda-api
-  #     dockerfile: Dockerfile
-  #     args:
-  #       APP_NAME: auth-service
-  #   restart: unless-stopped
-  #   env_file: .env
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   networks:
-  #     -  mukanda-network
+  auth-service:
+    build: 
+      context: ./mukanda-api
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: auth-service
+    container_name: auth-service
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      -  mukanda-network
 
-  # business-service:
-  #   build:
-  #     context: ./mukanda-api
-  #     dockerfile: Dockerfile
-  #     args:
-  #       APP_NAME: business-service
-  #   restart: unless-stopped
-  #   env_file: .env
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   networks:
-  #     -  mukanda-network
+  business-service:
+    build:
+      context: ./mukanda-api
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: business-service
+    container_name: business-service
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      -  mukanda-network
+
+
+#OBSERVABLITY
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - prometheus-data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules
+    ports:
+      - "9090:9090"
+    networks:
+      - mukanda-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_AUTH_ANONYMOUS_ENABLED: false
+      GF_SERVER_ROOT_URL: ${GF_SERVER_ROOT_URL}
+    ports:
+      - "5050:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - mukanda-network
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - mukanda-network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8090:8080"
+    networks:
+      - mukanda-network
 
 
 volumes:
@@ -311,6 +388,19 @@ volumes:
       o: bind
       device: /home/${USER}/data/mukanda_saas/rabbitmq/rabbitmq_log
 
+  prometheus-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/prometheus
+
+  grafana-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mukanda_saas/grafana
 
 networks:
    mukanda-network:

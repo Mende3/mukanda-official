@@ -10,12 +10,12 @@ export class CreateCheckoutSessionDto {
     @IsIn(UPGRADABLE_PLANS, { message: 'Plano inválido para upgrade' })
     plan: PlanType;
 
-    @ApiPropertyOptional({ example: 'https://app.mukanda.ao/billing/sucesso' })
+    @ApiPropertyOptional({ example: 'https://localhost:3000/billing/pagamento-sucesso' })
     @IsOptional()
     @IsUrl()
     successUrl?: string;
 
-    @ApiPropertyOptional({ example: 'https://app.mukanda.ao/billing/cancelado' })
+    @ApiPropertyOptional({ example: 'https://localhost:3000/billing/cancelado' })
     @IsOptional()
     @IsUrl()
     cancelUrl?: string;

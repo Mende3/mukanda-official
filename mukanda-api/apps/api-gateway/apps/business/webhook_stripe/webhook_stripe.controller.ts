@@ -2,10 +2,13 @@ import { Controller, Inject, Post, Req, Res, Headers, HttpStatus, RawBody } from
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiOperation, ApiExcludeController } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
-import { Request, Response } from 'express';
 import { handlerRcpError } from 'apps/api-gateway/utils/rpc-error.handler';
+import type { Request, Response } from 'express';
+import type { RawBodyRequest } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @ApiExcludeController()
+@SkipThrottle()
 @Controller('webhook/stripe')
 export class WebhookStripeController {
 
@@ -15,16 +18,20 @@ export class WebhookStripeController {
     
     @Post()
     async handleEvent(
-        @Req() req: Request,
+        @Req() req: RawBodyRequest<Request>,
         @Res() res: Response,
         @Headers('stripe-signature') signature: string, 
     ) {
+        if (!req.rawBody) {
+            return res.status(HttpStatus.BAD_REQUEST).send('Webhook Error: missing raw body');
+        }
+
         try {
             const result = await firstValueFrom (
                 this.businessClient.send('billing-webhook-process', {
-                    rawBody: req.body.toString('base64'),
+                    rawBody: req.rawBody.toString('base64'),
                     signature,
-                }).pipe(handlerRcpError),
+                }),
             );
             return res.status(HttpStatus.OK).json(result);
         } catch (err) {

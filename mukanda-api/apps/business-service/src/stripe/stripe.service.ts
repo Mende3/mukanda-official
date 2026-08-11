@@ -130,6 +130,7 @@ export class StripeService {
     //
     private async syncAgentsForPlan(business: { id: string, ownerId: string }, plan: PlanType) {
         const enabledTypes = new Set(this.PLAN_ENABLED_AGENTS[plan] ?? []);
+
        
         await this.prismaService.$transaction([
             this.prismaService.agent.updateMany({
@@ -157,7 +158,7 @@ export class StripeService {
     // handle stripe events
     async processWebhookEvent(rawBody: string, signature: string) {
         const buffer = Buffer.from(rawBody, 'base64');
-
+        console.log ('processWebhookEvent1')
         let event: Stripe.Event;
         try {
             event = this.stripePService.constructWebhookEvent(buffer, signature);
@@ -168,6 +169,7 @@ export class StripeService {
             });
         }
 
+        console.log ('processWebhookEvent2')
         switch (event.type) {
             case 'checkout.session.completed':
                 await this.handleCheckoutCompleted(event);
@@ -194,7 +196,7 @@ export class StripeService {
             statusCode: HttpStatus.BAD_REQUEST,
             message: 'Metadata ausente no evento de checkout',
         });
-}
+    }
         const ownerId = session.metadata.ownerId;
         const stripeSubscriptionId = session.subscription as string;
 

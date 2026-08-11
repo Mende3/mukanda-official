@@ -122,7 +122,8 @@ export class OrderService {
     const business = await this.getBusinessByOwnerId (userId);
 
     const orders = await this.prismaService.order.findMany (
-      {where: {businessId: business.id}
+      {where: {businessId: business.id},
+      include: {items: true}
     });
 
     await this.myRedisServie.cacheSet (

@@ -11,7 +11,7 @@ import {
 function createRedisClient(db: number) {
   return new Redis({
 
-      host: /*process.env.REDIS_HOST*/'localhost',
+      host: process.env.REDIS_HOST,
       port: Number(process.env.REDIS_PORT),
       username: process.env.REDIS_USER,
       password: process.env.REDIS_PASSWORD,

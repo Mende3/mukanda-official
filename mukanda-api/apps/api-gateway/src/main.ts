@@ -6,7 +6,9 @@ import cookieParser from 'cookie-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(ApiGatewayModule);
+  const app = await NestFactory.create(ApiGatewayModule, {rawBody: true});
+
+  // app.use('/api/webhook/stripe', express.raw({type: 'application/json'}))
 
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -34,6 +36,6 @@ async function bootstrap() {
     jsonDocumentUrl: 'doc-api/json'
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.GATEWAY_PORT ?? 3003);
 }
 bootstrap();

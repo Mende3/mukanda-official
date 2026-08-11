@@ -126,7 +126,7 @@ export class AuthController {
         @Body() body: VerificationCodeDto,
         @Req() req: Request & { user: { userId: string } }
     ) {
-        console.log(body.code)
+        (body.code)
         return firstValueFrom(
             this.authClient.send("auth-verify-code", {userId: req.user.userId, code: body.code})
             .pipe(handlerRcpError),
