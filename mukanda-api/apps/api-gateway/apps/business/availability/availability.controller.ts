@@ -12,7 +12,7 @@ import { UpdateAvailabilityDto } from '../../utils/dto/availability/updateAvaila
 import { UpdateSlotDto } from '../../utils/dto/availability/updateSlot.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 
-@SkipThrottle()
+@SkipThrottle({ auth: true, authHour: true })
 @Controller('availability')
 export class AvailabilityController {
     constructor (

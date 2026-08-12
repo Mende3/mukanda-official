@@ -16,7 +16,7 @@ import { UpdateCampaignDto } from '../../utils/dto/campaign/update-campaign.dto'
 import { SkipThrottle } from '@nestjs/throttler';
 
 
-@SkipThrottle()
+@SkipThrottle({ auth: true, authHour: true })
 @Controller('campaign')
 export class CampaignController {
     constructor (

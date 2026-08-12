@@ -8,7 +8,7 @@ import type { RawBodyRequest } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 
 @ApiExcludeController()
-@SkipThrottle()
+@SkipThrottle({ auth: true, authHour: true })
 @Controller('webhook/stripe')
 export class WebhookStripeController {
 

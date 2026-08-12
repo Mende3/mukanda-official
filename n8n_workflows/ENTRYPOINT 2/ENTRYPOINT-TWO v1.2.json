@@ -1,0 +1,529 @@
+{
+  "name": "ENTRYPOINT-TWO v1.2",
+  "nodes": [
+    {
+      "parameters": {
+        "queue": "entrypoint_queue",
+        "options": {
+          "acknowledge": "executionFinishesSuccessfully",
+          "jsonParseBody": true,
+          "onlyContent": true,
+          "parallelMessages": 2
+        }
+      },
+      "type": "n8n-nodes-base.rabbitmqTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        432
+      ],
+      "id": "1207f43b-7318-4d88-84dc-3606d8387243",
+      "name": "entrypoint_queue",
+      "credentials": {
+        "rabbitmq": {
+          "id": "nHf2TRnVQBHIuKjP",
+          "name": "RabbitMQ account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "251496af-7f68-4eb1-ba84-4f24c5e1df77",
+              "leftValue": "={{ $('entrypoint_queue').item.json.body.data.Info.IsFromMe }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "22c30860-8695-4cd3-83e9-a1a5857f228a",
+              "leftValue": "={{ $json.lid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -944,
+        416
+      ],
+      "id": "6be1117e-c33d-4bc8-862b-bbcf80b5bf72",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ed9601da-e3c5-4e91-9215-98e131f3f9f5",
+              "name": "query_fields",
+              "value": "={\n  \"whatsappInstanceId\":\"{{ $('entrypoint_queue').item.json.body.instanceId }}\",\n  \"whatsappInstanceToken\": \"{{ $('entrypoint_queue').item.json.body.instanceToken }}\"\n}",
+              "type": "object"
+            },
+            {
+              "id": "b8f7ee8b-61a5-4b0a-8bfb-7d5686f99652",
+              "name": "instance_data",
+              "value": "={\n  \"instance_name\": \"{{ $('entrypoint_queue').item.json.body.instanceName }}\",\n  \"phoneNumber\": \"{{ $('entrypoint_queue').item.json.body.instanceName }}\"\n}",
+              "type": "object"
+            },
+            {
+              "id": "7d5f3515-f2b6-477b-be01-67dff74381af",
+              "name": "sender_data",
+              "value": "={\n  \"sender_name\": \"{{ $json.pushName }}\",\n  \"remoteJID\": \"{{ $json.lid }}\",\n  \"message\": \"{{ $json.messageText }}\"\n}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        192
+      ],
+      "id": "3f97e986-e96c-434e-af96-72022b6b2d85",
+      "name": "extract_utils_field"
+    },
+    {
+      "parameters": {
+        "jsCode": "const agents = $(\"get_business_owner\").all().map(item => item.json)\nconst utils = $(\"extract_utils_field\").all().map(item => item.json)\n\nreturn {\n  business_status: agents,\n  utils_fields: utils\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "83f64c5e-53e2-44d3-bdf5-b6c5de640af2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wItZ95eay1teFKhx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wItZ95eay1teFKhx",
+          "cachedResultName": "CONVERSATION v1.0"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "88706eab-a380-4075-b538-fa1c13aba892",
+      "name": "CONVERSATION"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env[\"MUKANDA_API_HOST\"] }}/api/internal/business-owner?phoneNumber=%2B{{ $json.instance_data.phoneNumber.slice(1) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": false,
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -496,
+        192
+      ],
+      "id": "3712e225-36f6-43b2-9608-0287bd173833",
+      "name": "get_business_owner",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0d62c5db-6b28-491b-a580-ec7c4650750e",
+              "leftValue": "={{ $json.business.whatsappInstanceId }}",
+              "rightValue": "={{ $('extract_utils_field').item.json.query_fields.whatsappInstanceId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "be2a25d6-f165-4dd8-a716-f98b820924a6",
+              "leftValue": "={{ $json.business.whatsappInstanceToken }}",
+              "rightValue": "={{ $('extract_utils_field').item.json.query_fields.whatsappInstanceToken }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -304,
+        192
+      ],
+      "id": "06dbe183-61e7-4367-9dca-59eb884fe5c8",
+      "name": "verify_layer"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        592
+      ],
+      "id": "6eeb2ba9-f52c-498b-80c1-59a6f150b132",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "84354435-8858-43cf-8acd-e6741d204a4f",
+              "leftValue": "={{ $json.isGroup }}",
+              "rightValue": "Message",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7d8a3f21-3b19-42ed-b9ba-5a5fc1fc5481",
+              "leftValue": "={{ $json.isNewsletter }}",
+              "rightValue": "s.whatsapp.net",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1216,
+        432
+      ],
+      "id": "dc2bdf50-0be2-4a2e-b4b0-e2fda26ce4a2",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// Code node do n8n — Mukanda webhook entry point\n// Modo: \"Run Once for All Items\"\n// ============================================================\n\n/**\n * Desembrulha mensagens efémeras/\"ver uma vez\" — o texto real fica\n * dentro de um nível extra (ephemeralMessage.message, etc.), senão\n * o switch abaixo cai sempre no default mesmo sendo texto normal.\n */\nfunction unwrapMessage(message) {\n  const wrapperKeys = ['ephemeralMessage', 'viewOnceMessage', 'viewOnceMessageV2', 'deviceSentMessage'];\n  const key = Object.keys(message ?? {})[0];\n\n  if (wrapperKeys.includes(key) && message[key]?.message) {\n    return unwrapMessage(message[key].message);\n  }\n  return message;\n}\n\n/**\n * Extrai o texto da mensagem — cobre só os tipos de texto por agora\n * (conversation, extendedTextMessage). Qualquer outro tipo (imagem,\n * áudio, etc.) fica marcado como \"unknown\", sem rebentar.\n */\nfunction extractMessageText(rawMessage) {\n  const message = unwrapMessage(rawMessage);\n\n  if (!message || typeof message !== 'object') {\n    return { type: null, text: null };\n  }\n\n  const messageType = Object.keys(message)[0];\n  const content = message[messageType];\n\n  switch (messageType) {\n    case 'conversation':\n      return { type: messageType, text: content ?? null };\n    case 'extendedTextMessage':\n      return { type: messageType, text: content?.text ?? null };\n    default:\n      return { type: messageType ?? 'unknown', text: null };\n  }\n}\n\n/**\n * Percorre recursivamente o objeto todo e recolhe qualquer string\n * terminada em \"@lid\" ou \"@s.whatsapp.net\", seja qual for o nome\n * da chave ou a profundidade. O(n) sobre o total de campos.\n */\nfunction extractJids(data, path = '', result = { lid: [], whatsappNet: [] }) {\n  if (data === null || data === undefined) return result;\n\n  if (Array.isArray(data)) {\n    data.forEach((item, index) => extractJids(item, `${path}[${index}]`, result));\n    return result;\n  }\n\n  if (typeof data === 'object') {\n    for (const [key, value] of Object.entries(data)) {\n      const currentPath = path ? `${path}.${key}` : key;\n\n      if (typeof value === 'string') {\n        if (value.endsWith('@lid')) {\n          result.lid.push({ path: currentPath, value });\n        } else if (value.endsWith('@s.whatsapp.net')) {\n          result.whatsappNet.push({ path: currentPath, value });\n        }\n      } else if (typeof value === 'object' && value !== null) {\n        extractJids(value, currentPath, result);\n      }\n    }\n  }\n\n  return result;\n}\n\n/**\n * Devolve o value do primeiro match de um array de JIDs, ou null\n * se não houver nenhum — nunca undefined, para não desaparecer\n * silenciosamente em JSON.stringify.\n */\nfunction firstJidValue(jidArray) {\n  if (!Array.isArray(jidArray) || jidArray.length === 0) return null;\n  return jidArray[0].value;\n}\n\n// ============================================================\n// Processamento principal\n// ============================================================\n\nconst items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  const info = item.json?.body?.data?.Info ?? {};\n  const message = item.json?.body?.data?.Message ?? {};\n\n  const jids = extractJids(item.json);\n  const extractedText = extractMessageText(message);\n\n  const firstWhatsappNet = firstJidValue(jids.whatsappNet);\n  const firstLid = firstJidValue(jids.lid);\n\n  // chat cobre o caso em que só existe @lid (sem @s.whatsapp.net nenhum)\n  const chat = info.Chat || firstWhatsappNet || firstLid || null;\n  const isNewsletter = chat?.endsWith('@newsletter') ?? false;\n  const isGroup = info.IsGroup ?? chat?.endsWith('@g.us') ?? false;\n\n  output.push({\n    json: {\n      chat,\n      sender: info.Sender || firstWhatsappNet || null,\n      senderLid: info.SenderAlt || firstLid || null,\n      pushName: info.PushName || null,\n      isGroup,\n      isNewsletter,\n      messageType: extractedText.type,\n      messageText: extractedText.text,\n      timestamp: info.Timestamp ?? null,\n      messageId: info.ID ?? null,\n      instanceId: item.json?.body?.instanceId ?? null,\n      instanceName: item.json?.body?.instanceName ?? null,\n      // conjunto completo, só para auditoria/debug — remove se não precisares\n      _allJids: jids\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1696,
+        432
+      ],
+      "id": "372839ac-6a87-4b3e-982d-56eb00b9a13e",
+      "name": "get lid and more"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// Code node do n8n — \"Extract First LID\"\n// Modo: \"Run Once for All Items\"\n// Responsabilidade única: devolver o primeiro @lid encontrado\n// em qualquer campo do payload, ou null se não existir.\n// ============================================================\n\nfunction findFirstLid(data, path = '') {\n  if (data === null || data === undefined) return null;\n\n  if (Array.isArray(data)) {\n    for (let i = 0; i < data.length; i++) {\n      const found = findFirstLid(data[i], `${path}[${i}]`);\n      if (found) return found;\n    }\n    return null;\n  }\n\n  if (typeof data === 'object') {\n    for (const [key, value] of Object.entries(data)) {\n      const currentPath = path ? `${path}.${key}` : key;\n\n      if (typeof value === 'string' && value.endsWith('@lid')) {\n        return { path: currentPath, value };\n      }\n\n      if (typeof value === 'object' && value !== null) {\n        const found = findFirstLid(value, currentPath);\n        if (found) return found;\n      }\n    }\n  }\n\n  return null;\n}\n\nconst items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  const firstLid = findFirstLid(item.json);\n\n  output.push({\n    json: {\n      ...item.json,\n      lid: firstLid?.value ?? null,\n      lidFoundAt: firstLid?.path ?? null   // útil para debug: onde exatamente veio\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        432
+      ],
+      "id": "b744dff4-8b1c-42c9-a717-0f11ee832551",
+      "name": "get master lid"
+    }
+  ],
+  "pinData": {
+    "entrypoint_queue": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n:5678",
+            "user-agent": "Go-http-client/1.1",
+            "content-length": "1628",
+            "content-type": "application/json",
+            "accept-encoding": "gzip"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "data": {
+              "Info": {
+                "AddressingMode": "",
+                "BroadcastListOwner": "",
+                "BroadcastRecipients": null,
+                "Category": "",
+                "Chat": "61628720656597@lid",
+                "DeviceSentMeta": null,
+                "Edit": "",
+                "ID": "3EB009C60AC8CD9DB5C09A",
+                "IsFromMe": false,
+                "IsGroup": false,
+                "MediaType": "",
+                "MsgBotInfo": {
+                  "EditSenderTimestampMS": "0001-01-01T00:00:00Z",
+                  "EditTargetID": "",
+                  "EditType": ""
+                },
+                "MsgMetaInfo": {
+                  "DeprecatedLIDSession": null,
+                  "TargetChat": "",
+                  "TargetID": "",
+                  "TargetSender": "",
+                  "ThreadMessageID": "",
+                  "ThreadMessageSenderJID": ""
+                },
+                "Multicast": false,
+                "PushName": "",
+                "RecipientAlt": "",
+                "Sender": "61628720656597@lid",
+                "SenderAlt": "",
+                "ServerID": 0,
+                "Timestamp": "2026-07-04T22:24:13+01:00",
+                "Type": "",
+                "VerifiedName": null
+              },
+              "IsBotInvoke": false,
+              "IsDocumentWithCaption": false,
+              "IsEdit": false,
+              "IsEphemeral": false,
+              "IsLottieSticker": false,
+              "IsViewOnce": false,
+              "IsViewOnceV2": false,
+              "IsViewOnceV2Extension": false,
+              "Message": {
+                "conversation": "oi",
+                "messageContextInfo": {
+                  "messageSecret": "l3yfY7TASsZM6Di7Xc9Z9GUjqoRA/G4yfmX1o/FXVsc="
+                }
+              },
+              "NewsletterMeta": null,
+              "RetryCount": 0,
+              "SourceWebMsg": {
+                "isMentionedInStatus": false,
+                "key": {
+                  "ID": "3EB009C60AC8CD9DB5C09A",
+                  "fromMe": false,
+                  "remoteJID": "61628720656597@lid"
+                },
+                "message": {
+                  "conversation": "oi",
+                  "messageContextInfo": {
+                    "messageSecret": "l3yfY7TASsZM6Di7Xc9Z9GUjqoRA/G4yfmX1o/FXVsc="
+                  }
+                },
+                "messageSecret": "l3yfY7TASsZM6Di7Xc9Z9GUjqoRA/G4yfmX1o/FXVsc=",
+                "messageTimestamp": 1783200253,
+                "reportingTokenInfo": {
+                  "reportingTag": "ARRq9Ur8Dl6winQGvzoo2Rzp1Sg="
+                }
+              },
+              "UnavailableRequestID": "3EB06177D1030C84783352"
+            },
+            "event": "Message",
+            "instanceId": "358000dd-60b3-4350-bc0a-604730135e8d",
+            "instanceName": "+244956632348",
+            "instanceToken": "$2b$10$M4msM1y4BRmo3weKmHIxGuK5TDboBcpE9jkXGC2cA3xEHcioLiJm2"
+          },
+          "webhookUrl": "http://n8n:5678/webhook-test/mukanda-entry-point",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "entrypoint_queue": {
+      "main": [
+        [
+          {
+            "node": "get lid and more",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "extract_utils_field",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract_utils_field": {
+      "main": [
+        [
+          {
+            "node": "get_business_owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "CONVERSATION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_business_owner": {
+      "main": [
+        [
+          {
+            "node": "verify_layer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "verify_layer": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get lid and more": {
+      "main": [
+        [
+          {
+            "node": "get master lid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get master lid": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "166cb2d3-70d7-4d5d-b165-f7044fe23f5a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c95a8d696010138f8f0735a7db4b5e5e165da445ad74f76d4a3d68148c3761be"
+  },
+  "nodeGroups": [],
+  "id": "GDdTupbOSjKtjMoL",
+  "tags": []
+}

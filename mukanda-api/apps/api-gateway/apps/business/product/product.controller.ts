@@ -21,7 +21,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { UpdateStockDto } from '../../utils/dto/product/update-stock.dto';
 import { UpdateMinStockDto } from '../../utils/dto/product/update-stock-min.dto';
 
-@SkipThrottle()
+@SkipThrottle({ auth: true, authHour: true })
 @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
 @Controller('product')
 export class ProductController {

@@ -52,6 +52,7 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/package*.json ./
 COPY --from=builder /usr/src/app/apps/${APP_NAME}/prisma ./prisma
+# COPY --from=builder /usr/src/app/apps/${APP_NAME}/generated ./generated
 COPY --from=builder /usr/src/app/apps/${APP_NAME}/prisma.config.ts ./prisma.config.ts
 
 COPY script/entrypoint.sh /entrypoint.sh

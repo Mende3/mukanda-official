@@ -15,7 +15,7 @@ import { UpdateCustomAgentDto} from '../../utils/dto/business/update-agent.dto';
 import { CreateCustomAgentDto } from '../../utils/dto/business/create-custom-agent.dto';
 import { InstanceConnectDto } from '../../utils/dto/business/instance-connect.dto';
 
-
+@SkipThrottle({ auth: true, authHour: true })
 @Controller('business')
 export class BusinessController {
     constructor(
@@ -119,8 +119,6 @@ export class BusinessController {
         );
     }
 
-
-    @SkipThrottle()
     @ApiOperation({ summary: 'pegar o qr code e o code pair' })
     @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
     @Roles(Role.User)
@@ -171,7 +169,6 @@ export class BusinessController {
     //     );
     // }
 
-    @SkipThrottle()
     @ApiOperation({ summary: 'pegar os agents'})
     @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
     @Roles(Role.User)
@@ -183,7 +180,6 @@ export class BusinessController {
         )
     }
     
-    @SkipThrottle()
     @ApiOperation({ summary: 'pegar o agent por id' })
     @UseGuards(AuthGuard, EmailVerifiedGuard, RolesGuard)
     @Roles(Role.User)

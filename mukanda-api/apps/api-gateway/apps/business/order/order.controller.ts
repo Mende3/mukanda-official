@@ -13,7 +13,7 @@ import { AuthGuard } from '../../auth/auth/guards/auth/auth.guard';
 import { UpdateOrderDto } from '../../utils/dto/order/update-order.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 
-@SkipThrottle()
+@SkipThrottle({ auth: true, authHour: true })
 @ApiTags('Orders')
 @ApiBearerAuth()
 @Controller('order')

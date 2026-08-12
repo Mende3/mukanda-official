@@ -34,7 +34,7 @@ async function seedPlans() {
       name: 'Basic',
       description: 'Para negócios em crescimento (agente de conversa e de geranciamento de encomendas)',
       stripePriceId: 'price_1TxwtTBN6jfCePZi1jdrybGP',
-      amountCents: 399999,
+      amountCents: 449999,
       currency: 'aoa',
       aiMessageLimit: 55,
       quotaPeriod: QuotaPeriod.DAILY,

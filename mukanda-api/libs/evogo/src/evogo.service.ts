@@ -89,7 +89,8 @@ export class EvogoService implements OnModuleInit {
                         'CONNECTION',
                         'QRCODE',
                     ],                
-                    webhookUrl: this.n8nTrigger    
+                    webhookUrl: this.n8nTrigger,
+                    ignoreGroups: true
                 },
                 {
                     headers: {

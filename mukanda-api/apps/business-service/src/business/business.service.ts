@@ -271,11 +271,6 @@ export class BusinessService {
       message: 'O seu negócio já foi criado',
     });
 
-
-    const instance = await this.evogoService.createInstance (phone);
-
-    const { id, token } = instance.data;
-
     const freePlan = await this.prismaService.plan.findUnique({
       where: { type: PlanType.FREE}
     });
@@ -301,6 +296,10 @@ export class BusinessService {
         ownerId: userId   
       },
     });
+
+    const instance = await this.evogoService.createInstance (phone);
+
+    const { id, token } = instance.data;
 
     const prompts = {
       conversation:    this.buildSystemPromptCA(name, 'Kusamba'),

@@ -1,0 +1,16 @@
+2026-08-12 15:15:09 - [UPDATE] Nova versão! (2.3000.1044062641 -> 2.3000.1045028006-alpha)
+ Container evolution-go Restarting 
+ Container evolution-go Started 
+2026-08-12 15:15:12 - [SUCCESS] Serviço evolution-go reiniciado com sucesso.
+2026-08-12 15:20:18 - [UPDATE] Nova versão! (2.3000.1045028006-alpha -> 2.3000.1045028006) [Original web: 2.3000.1045028006-alpha]
+ Container evolution-go Restarting 
+ Container evolution-go Started 
+2026-08-12 15:20:19 - [SUCCESS] Serviço evolution-go reiniciado com a versão 2.3000.1045028006.
+2026-08-12 15:27:35 - [INFO] Versão 2.3000.1045028006 mantida. Nenhuma alteração.
+2026-08-12 15:28:02 - [UPDATE] Nova versão! (2.3000.1044062641 -> 2.3000.1045028006) [Original web: 2.3000.1045028006-alpha]
+unknown shorthand flag: 'd' in -d
+2026-08-12 15:28:02 - [SUCCESS] Serviço evolution-go reiniciado com a versão 2.3000.1045028006.
+2026-08-12 15:50:31 - [UPDATE] Nova versão! (2.3000.1044062641 -> 2.3000.1045028006)
+2026-08-12 15:50:31 - [HOST] .env atualizado no Host.
+2026-08-12 15:50:31 - [CONTAINER] .env alterado com sucesso dentro do container evolution-go.
+2026-08-12 15:50:31 - [SUCCESS] Sinal de recarga enviado para o container.

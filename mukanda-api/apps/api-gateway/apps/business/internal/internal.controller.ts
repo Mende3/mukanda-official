@@ -12,7 +12,7 @@ import { handleError } from '@app/evogo/utils/handleError';
 import { handlerRcpError } from 'apps/api-gateway/utils/rpc-error.handler';
 
 @Controller('internal')
-@SkipThrottle()
+@SkipThrottle({ auth: true, authHour: true })
 @UseGuards(ApiKeyGuard)
 export class InternalController {
     

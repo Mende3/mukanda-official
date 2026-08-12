@@ -15,6 +15,11 @@ case "$APP_NAME" in
     echo "Running business migration..."
     npx prisma migrate deploy \
       --schema=./prisma/schema.prisma
+
+    if [ "$RUN_SEED" = "true" ]; then
+      echo "Running plan seed..."
+      npx ts-node prisma/script/seed-plan.ts
+    fi
     ;;
 
 esac
