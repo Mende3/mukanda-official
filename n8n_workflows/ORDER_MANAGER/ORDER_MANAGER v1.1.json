@@ -1,0 +1,602 @@
+{
+  "name": "ORDER_MANAGER v1.1",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "f961fd4a-2242-49f2-ae84-0f704bd9d8f5",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1264,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "76f7821b-4415-4779-9ebb-2c64ae1f60f8",
+              "name": "businessId",
+              "value": "={{ $json.businessId }}",
+              "type": "string"
+            },
+            {
+              "id": "98b31d20-f150-4fb5-94bf-84a759195f31",
+              "name": "clientName",
+              "value": "={{ $json.utils_fields.sender_data.sender_name }}",
+              "type": "string"
+            },
+            {
+              "id": "f492a2bb-5ebd-4c8f-bfbb-d464bf5c349d",
+              "name": "clientNumber",
+              "value": "={{ $json.utils_fields.sender_data.sender_number }}",
+              "type": "string"
+            },
+            {
+              "id": "3d4ada22-8d16-4475-8bd9-6801b8aa4559",
+              "name": "produto(s)",
+              "value": "={{ $json['produto(s)'] }}",
+              "type": "object"
+            },
+            {
+              "id": "76079a3b-3850-4180-8b33-c762f502ce23",
+              "name": "reply",
+              "value": "={{ $json.reply }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        80
+      ],
+      "id": "4337f39a-62ff-4718-850e-443474ab311c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.order_manager_context.systemPrompt }}\n\nTu extrais o JSON final para registo de uma ENCOMENDA (não produto), incluindo sugestões de produtos relacionados.\n\nFormato de saída (estrutura obrigatória — os valores abaixo são apenas exemplo de FORMATO, nunca copies estes valores):\n{\n  \"scheduledAt\": \"<data/hora ISO 8601 extraída da mensagem do cliente, ou horário atual se não mencionado>\",\n  \"notes\": \"<observações do cliente, se houver — omitir se não houver>\",\n  \"clientName\": \"<nome do cliente>\",\n  \"clientNumber\": \"<número do cliente>\",\n  \"items\": [\n    {\n      \"productId\": \"<vem de product_id>\",\n      \"quantity\": \"<vem de quantity>\",\n      \"unitPrice\": \"<vem de price>\"\n    }\n  ],\n  \"suggestions\": [\n    {\n      \"description\": \"<descrição do produto sugerido COM SEUS PREÇOS>\"\n    }\n  ]\n}\n\nRegras:\n- \"items\" é SEMPRE um array, mesmo com um único produto.\n- Mapeia items: product_id → productId | quantity → quantity | price → unitPrice\n- \"suggestions\"envia a description dos produtos diretamente, sem inventar produtos novos.\n- Se não houver sugestões disponíveis, \"suggestions\" deve ser um array vazio [].\n- Responde APENAS com o JSON, sem texto antes ou depois.\n\nData e hora atuais: {{ $now.toISO() }}\nSe o cliente não mencionar data/hora específica, usa a data e hora atuais acima. Nunca inventes uma data.\n\nDados do cliente:\nname: {{ $json.clientName }}\nnumero: {{ $json.clientNumber }}\nprodutos: {{ JSON.stringify($json['produto(s)']) }}\nsugestoes_disponiveis: {{ JSON.stringify($('When Executed by Another Workflow').item.json.sugestion) }}\nreply: {{ $json.reply }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -448,
+        80
+      ],
+      "id": "06c67d3a-1156-41b0-9fc3-dd34c558edfe",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        352
+      ],
+      "id": "f3670193-cee8-468a-ac19-e70aa02c7029",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "pzopRt9MWAw6vpBg",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "oRVm8rlXxjIaxKfg",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/oRVm8rlXxjIaxKfg",
+          "cachedResultName": "SUGGESTIONS v1.0"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        256
+      ],
+      "id": "18fda2a6-c87a-4128-8b1e-9cc6c12e2b42",
+      "name": "Call 'SUGGESTIONS v1.0'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "42e1a27f-549c-4b47-83dd-917959677da5",
+              "name": "business_context",
+              "value": "={{ $('When Executed by Another Workflow').item.json.business_context }}",
+              "type": "object"
+            },
+            {
+              "id": "178dc74d-a2e5-47f2-9a03-fea296916f1f",
+              "name": "sugest_manager_context",
+              "value": "={{ $('When Executed by Another Workflow').item.json.order_manager_context }}",
+              "type": "object"
+            },
+            {
+              "id": "fd3cca5a-84fc-48b7-aabf-1350d90f415a",
+              "name": "utils_fields",
+              "value": "={{ $('When Executed by Another Workflow').item.json.utils_fields }}",
+              "type": "object"
+            },
+            {
+              "id": "d4eb3f42-6b73-4059-b990-588252e9e6fa",
+              "name": "reply",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "e1dbaf7d-0e2a-4fb1-bd7a-b3ff32fc614d",
+              "name": "sugestion",
+              "value": "={{ $('parsing').item.json.suggestions }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        256
+      ],
+      "id": "68fa92e6-0651-4344-be09-5fc5affb90cf",
+      "name": "extract S"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env[\"MUKANDA_API_HOST\"]}}/api/internal/quota-and-rate/check",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "businessId",
+              "value": "={{ $json.business_context.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -816,
+        80
+      ],
+      "id": "81ae7e76-1544-4451-bb14-8f3fc61b7721",
+      "name": "quota_check"
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $('When Executed by Another Workflow').item.json.business_context.whatsappInstanceToken }}",
+        "sendTextNumber": "={{ $('Edit Fields').item.json.clientNumber }}",
+        "sendTextContent": "A sua encomenda foi confirmada, aguarde a ligação ou outra obordagem da empresa ",
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        384,
+        80
+      ],
+      "id": "5ddd63c3-873e-4500-8e23-6420e8b7d204",
+      "name": "Send text message",
+      "credentials": {
+        "evoGoApi": {
+          "id": "TDYDwrYoWmsEL8JQ",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.item.json.output;\nconst cleaned = raw.replace(/```json\\n?/, '').replace(/```\\s*$/, '').trim();\nconst parsed = JSON.parse(cleaned);\nreturn { json: parsed };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        80
+      ],
+      "id": "0506411f-c787-4e83-9498-e6a0a4201c45",
+      "name": "parsing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env[\"MUKANDA_API_HOST\"]}}/api/internal/create-order-fwf",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "phoneNumber",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $env[\"MUKANDA_X_INTERNAL_NAME\"] }}",
+              "value": "={{ $env[\"MUKANDA_X_INTERNAL_KEY\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  scheduledAt: $json.scheduledAt,\n  clientName: $json.clientName,\n  clientNumber: $json.clientNumber,\n  items: $json.items.map(item => ({\n    productId: item.productId,\n    quantity: item.quantity,\n    unitPrice: item.unitPrice\n  })),\n  ...(($json.notes) ? { notes: $json.notes } : {})\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        144,
+        80
+      ],
+      "id": "b5013ff7-293c-43fe-b091-7dd356b3d01f",
+      "name": "create order",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "## POST\n\n\n\n\n\n\n\n\ncria a encomenda",
+        "height": 416,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        0
+      ],
+      "id": "4bad0a4a-f97f-4f0d-8c29-0fb53e12f6dd",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "afb5ceb8-dac3-4d01-a4d6-cb3ae5093651",
+              "leftValue": "={{ $json.order_manager_context.isEnabled }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a2a57026-0a44-4ec0-9fa6-a2247727f7b3",
+              "leftValue": "={{ $json.order_manager_context.status }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1056,
+        96
+      ],
+      "id": "44cf17e8-97e6-4199-a1d1-2ca831dd85b4",
+      "name": "AS status"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        592
+      ],
+      "id": "2c591f5e-b0d3-4726-8ae0-36d468937ea4",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "={{ $('When Executed by Another Workflow').item.json.business_context.whatsappInstanceToken }}",
+        "sendTextNumber": "={{ $json.utils_fields.sender_data.sender_number }}",
+        "sendTextContent": "Não é possível agendar no momento",
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        576
+      ],
+      "id": "2de1b075-da8c-4d19-8eca-0c452ff7010a",
+      "name": "Send text message1",
+      "credentials": {
+        "evoGoApi": {
+          "id": "TDYDwrYoWmsEL8JQ",
+          "name": "EvoGo account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "business_context": {
+            "id": "3f07b949-7931-4236-83d8-5461d2b235ee",
+            "name": "Mendes Fashion",
+            "phone": "+244956632348",
+            "description": "O meu negócio",
+            "isActive": true,
+            "whatsappInstanceId": "2afd6c31-05cd-47aa-b169-c22cfb760290",
+            "whatsappInstanceToken": "$2b$10$L6OLAJzXa5NPMJPazkn0wux0WNqzMdh3XmLWdhbSsetoCkCiragm2"
+          },
+          "utils_fields": {
+            "query_fields": {
+              "whatsappInstanceId": "2afd6c31-05cd-47aa-b169-c22cfb760290",
+              "whatsappInstanceToken": "$2b$10$L6OLAJzXa5NPMJPazkn0wux0WNqzMdh3XmLWdhbSsetoCkCiragm2"
+            },
+            "instance_data": {
+              "instance_name": "+244956632348",
+              "phoneNumber": "+244956632348"
+            },
+            "sender_data": {
+              "sender_name": "Mendes",
+              "sender_number": "244936854246",
+              "remoteJID": "61628720656597@lid",
+              "message": "queria algumas sugestões de encomendas da sua loja"
+            }
+          },
+          "order_manager_context": {
+            "name": "Gestor de Encomendas",
+            "status": false,
+            "isEnabled": true,
+            "description": "Gere pedidos recebidos por WhatsApp",
+            "systemPrompt": "És o Gestor de Encomendas, agente de gestão de encomendas da Mendes Fashion. O teu objetivo é registar e acompanhar as encomendas do cliente.",
+            "personality": "professional",
+            "pollMinInterval": null,
+            "pollTrigger": null
+          },
+          "produto(s)": {
+            "product_id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "Camiseta Branca",
+            "quantity": 1,
+            "price": 1500
+          },
+          "sugest_manager_context": {
+            "name": "Kulombola",
+            "status": false,
+            "isEnabled": false,
+            "description": "Agente de sugestões e recomendações",
+            "systemPrompt": "És o Kulombola, assistente virtual da Mendes Fashion. O teu objetivo é sugerir produtos relevantes ao cliente no momento certo.",
+            "personality": "friendly",
+            "pollMinInterval": null,
+            "pollTrigger": null
+          },
+          "reply": "Simulação de saída de encomenda com actions:\n\nImagina que o cliente quer encomendar um produto chamado *Camiseta Branca* que custa *1500 Kz*. Ele escolhe o horário para *amanhã às 15h* e confirma a encomenda.\n\nAqui está como seria a resposta com os actions necessários:",
+          "sugestion": [
+            {
+              "name": "Calça Jeans",
+              "price": 3500,
+              "description": "Calça jeans azul, modelo clássico"
+            },
+            {
+              "name": "Ténis Esportivo",
+              "price": 4200,
+              "description": "Ténis para uso casual e esportivo"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AS status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "parsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract S": {
+      "main": [
+        [
+          {
+            "node": "Call 'SUGGESTIONS v1.0'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send text message": {
+      "main": [
+        [
+          {
+            "node": "extract S",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parsing": {
+      "main": [
+        [
+          {
+            "node": "create order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create order": {
+      "main": [
+        [
+          {
+            "node": "Send text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "quota_check": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AS status": {
+      "main": [
+        [
+          {
+            "node": "quota_check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send text message1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "fc1f6dff-4ba4-4edc-9291-0011e8bab67e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c95a8d696010138f8f0735a7db4b5e5e165da445ad74f76d4a3d68148c3761be"
+  },
+  "nodeGroups": [],
+  "id": "5pGGRAx3189StfP2",
+  "tags": []
+}
