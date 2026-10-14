@@ -1,0 +1,74 @@
+LICENÇA DE USO EXCLUSIVAMENTE EDUCACIONAL — MUKANDA
+
+Copyright (c) 2026 Mendes Francisco. Todos os direitos reservados.
+
+Esta licença NÃO é uma licença de software livre ou de código aberto. O código-fonte do Mukanda ("o Software") está disponível publicamente apenas para consulta e estudo.
+
+1. PERMISSÕES
+
+É concedida a qualquer pessoa uma licença pessoal, limitada, não exclusiva, intransmissível e revogável para:
+
+a) ler, estudar e analisar o código-fonte, a arquitetura e a documentação do Software;
+b) executar o Software localmente, em ambiente próprio e não comercial, para fins de aprendizagem, ensino ou investigação académica;
+c) fazer alterações ao Software para fins de experimentação pessoal e educativa, sem as distribuir.
+
+2. PROIBIÇÕES
+
+É expressamente proibido, sem autorização prévia e escrita do autor:
+
+a) usar o Software, no todo ou em parte, para obter lucro, direta ou indiretamente, incluindo a venda, o aluguer, o licenciamento, a oferta como serviço (SaaS) ou a integração em produtos ou serviços comerciais;
+b) usar o Software em ambiente de produção ou em qualquer atividade de uma empresa ou organização com fins lucrativos;
+c) praticar engenharia reversa, descompilar, desmontar ou analisar o Software ou os serviços do autor com o objetivo de replicar, copiar ou desenvolver um produto ou serviço concorrente;
+d) copiar, redistribuir, publicar ou sublicenciar o Software, no todo ou em parte, como se fosse obra própria ou sem esta licença e o aviso de direitos de autor;
+e) remover ou alterar avisos de direitos de autor, atribuição ou esta licença;
+f) usar o nome "Mukanda" ou a identidade visual do projeto de forma que sugira origem, patrocínio ou associação com o autor.
+
+3. LICENÇA COMERCIAL SOB CONTRATO
+
+O uso comercial do Software só é permitido mediante contrato de licença comercial, celebrado por escrito com o autor. O autor pode conceder ou recusar o contrato, livremente e caso a caso.
+
+O contrato fixa as condições do uso comercial, que podem incluir:
+
+a) o pagamento de uma percentagem sobre a receita bruta obtida com o uso do Software;
+b) o pagamento de um valor fixo, único ou periódico;
+c) uma combinação das anteriores;
+d) o direito do autor a pedir os registos e documentos necessários para verificar a receita declarada (auditoria).
+
+Enquanto o contrato não estiver assinado por ambas as partes, qualquer uso comercial é considerado não autorizado e fica sujeito à cláusula 4.
+
+4. CLÁUSULA PENAL
+
+Quem violar as proibições da cláusula 2 fica obrigado a pagar ao autor, a título de cláusula penal, o maior dos seguintes valores:
+
+a) 5.000 € (cinco mil euros); ou
+b) 20% (vinte por cento) da receita bruta obtida, direta ou indiretamente, com o uso indevido do Software.
+
+O valor mínimo de 5.000 € aplica-se por cada violação. Para apurar a alínea b), o infrator deve fornecer ao autor, quando este o solicitar, os registos e documentos que comprovem a receita obtida. A recusa em fornecê-los não impede o autor de provar a receita por outros meios.
+
+O pagamento da cláusula penal não confere ao infrator qualquer direito de continuar a usar o Software, e não substitui um contrato de licença comercial. O autor mantém o direito a:
+
+a) exigir a cessação imediata do uso indevido;
+b) reclamar indemnização por danos superiores ao valor da cláusula penal, nos termos da lei aplicável;
+c) recorrer aos meios judiciais e extrajudiciais que a lei lhe confira.
+
+5. DURAÇÃO E REVOGAÇÃO
+
+A licença vigora enquanto o licenciado cumprir os seus termos e cessa automaticamente, sem necessidade de aviso, em caso de incumprimento. O autor pode revogar esta licença para futuros usos, mediante comunicação pública no repositório. A revogação não afeta responsabilidades já constituídas.
+
+6. SEM GARANTIAS
+
+O Software é fornecido "no estado em que se encontra", sem garantias de qualquer espécie, expressas ou implícitas, incluindo adequação a um fim específico, ausência de erros ou de vulnerabilidades. O autor não é responsável por danos decorrentes do uso do Software. O licenciado é responsável pela segurança e pela configuração do seu próprio ambiente, incluindo a proteção de chaves, tokens e credenciais.
+
+7. TERCEIROS
+
+O Software integra ou comunica com componentes e serviços de terceiros (por exemplo, NestJS, PostgreSQL, Redis, RabbitMQ, n8n, Evolution Go, Stripe, Cloudflare e Resend). Esses componentes mantêm as suas próprias licenças e termos, que o licenciado deve cumprir. Esta licença aplica-se apenas ao código original do autor.
+
+8. LEI APLICÁVEL E FORO
+
+Esta licença é regida pela lei da República de Angola. Para a resolução de litígios é competente o foro da Comarca de Luanda, com renúncia a qualquer outro.
+
+9. CONTACTO
+
+Pedidos de autorização comercial ou esclarecimentos: <inserir email de contacto>.
+
+Ao usar, copiar ou modificar o Software, o licenciado declara ter lido e aceitado os termos desta licença.
